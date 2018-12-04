@@ -1,0 +1,11 @@
+This tool will take input in the form of .mca and .msn rail CIF files and .xml bus TransXchange files, 
+to convert them to LIN files for use in Cube Voyager
+
+
+Start the tool by running the script 'CreateGUI.py' using Python, from command line this would be:
+
+	python CreateGUI.py
+
+A variety of lookup files for the Cube Voyager nodes are included
+
+Requires Python 3
