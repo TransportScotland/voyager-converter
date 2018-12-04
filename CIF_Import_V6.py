@@ -577,7 +577,8 @@ def import_timetable_info(T1_MCA_Path, stat_path, save_timetables_path, SName_Vo
                                         # Skips the service if it is not in the model
                                         if '1' not in stat_seq_node:
                                                 continue
-                                        else:                                                
+                                        else:
+                                                node = ''
                                                 timetables.append([transtype, uniqueID, firstdate,\
                                                         lastdate, mon, tue, wed, thu, fri, sat,\
                                                         sun, bankhols, status, catgry, \
