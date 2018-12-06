@@ -1,3 +1,4 @@
+from datetime import date
 import os
 import csv
 import sqlite3
@@ -37,28 +38,19 @@ class time_entry:
         self.date_dict.setdefault(day, [])
         self.date_dict[day].append(time)
 
-class date_entry:
-    def __init__(self, date=[0,0,0]):
-        date = [int(x) for x in date]
-        self.day = date[0]
-        self.month = date[1]
-        self.year = date[2]
-    def is_later_than(self, other): #Returns true if the date is later than or equal to the argument given
-        if self.year > other.year:return True
-        elif self.year == other.year:
-            if self.month > other.month: return True
-            elif self.month == other.month:
-                    if self.day >= other.day: return True
+
+class DateEntry:
+    def __init__(self, d=None):
+        if d is None:
+            # If no date values are passed, assume earliest date allowed
+            self.date = date.min
         else:
-            return False 
-    def within_range(self, start, end): # Returns true if the date is between start and end
-        '''print(str(self.year) + " " + str(self.month) + " " + str(self.day))
-        print(str(start.year) + " " + str(start.month) + " " + str(start.day))
-        print(str(end.year) + " " + str(end.month) + " " + str(end.day))'''
-        if self.is_later_than(start) and end.is_later_than(self):
-            return True
-        else:
-            return False
+            self.date = date(year=d[2], month=d[1], day=d[0])
+
+    def within_range(self, start, end):
+        if not type(start) == DateEntry and type(end) == DateEntry:
+            raise TypeError('start and end variables must be of type DateEntry')
+        return start.date < self.date < end.date
         
 
 ########## Currently ignores the fact that some services will run into the next day #######################
@@ -82,8 +74,8 @@ def find_mid(start, running):   #start = [h,m,s], running = s
 def create_stop_table(filename, op_list, day_filter, date_filter, c):
 
     global num_entries, operator_index
-    date_range_from = date_entry(date_filter[0])
-    date_range_to = date_entry(date_filter[1])
+    date_range_from = DateEntry(date_filter[0])
+    date_range_to = DateEntry(date_filter[1])
 
     list_of_journeys = []
     journey_code_dict = {}
@@ -150,8 +142,8 @@ def create_stop_table(filename, op_list, day_filter, date_filter, c):
         line_name = serv.find("ns:Lines", ns).find("ns:Line", ns).find("ns:LineName", ns).text
         
         op_period = serv.find("ns:OperatingPeriod", ns)
-        start_date = date_entry([x for x in reversed(op_period.find("ns:StartDate", ns).text.split('-'))])
-        end_date = date_entry([x for x in reversed(op_period.find("ns:EndDate", ns).text.split('-'))])
+        start_date = DateEntry([x for x in reversed(op_period.find("ns:StartDate", ns).text.split('-'))])
+        end_date = DateEntry([x for x in reversed(op_period.find("ns:EndDate", ns).text.split('-'))])
         
         valid_serv = date_range_from.within_range(start_date, end_date) or date_range_to.within_range(start_date, end_date)\
                      or start_date.within_range(date_range_from, date_range_to) or end_date.within_range(date_range_from, date_range_to)

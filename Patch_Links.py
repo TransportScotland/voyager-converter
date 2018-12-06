@@ -46,45 +46,45 @@ class connection_container:
 # patched_file = file to write the servvices with patched nodes to
 def get_unique_links(unpatched_file, lookup_file, patched_file, log):
 
-        log.add_message("Patching Node Routes\n")
+    log.add_message("Patching Node Routes\n")
 
-        unique_links = "unique_links.txt"
-        
-        #Nodes are the final column stored in the file
-        conn = sqlite3.connect(':memory:')
-        c = conn.cursor()
-        try:
-            with open(unpatched_file, "r") as db:
-                    reader = csv.reader(db)
-                    columns = next(reader)
-                    query = "INSERT INTO all_serv({0}) VALUES ({1})"
-                    create_query = "CREATE TABLE all_serv (" + ','.join(columns) + ")"
-                    query = query.format(','.join(columns), ','.join('?' * len(columns)))
-                    c.execute(create_query)
-                    for data in reader:
-                            c.execute(query, data)
-                    query = "SELECT stat_seq_nodes FROM all_serv"
-                    c.execute(query)
-                    nodes = c.fetchall()
-                    links = set()
+    unique_links = "unique_links.txt"
 
-                    for sequence in nodes:
-                            sequence = sequence[0].split(', ')
-                            for i in range(0, len(sequence)-1):
-                                    links.add((sequence[i].lstrip(), sequence[i+1].lstrip()))
+    #Nodes are the final column stored in the file
+    conn = sqlite3.connect(':memory:')
+    c = conn.cursor()
+    try:
+        with open(unpatched_file, "r") as db:
+            reader = csv.reader(db)
+            columns = next(reader)
+            query = "INSERT INTO all_serv({0}) VALUES ({1})"
+            create_query = "CREATE TABLE all_serv (" + ','.join(columns) + ")"
+            query = query.format(','.join(columns), ','.join('?' * len(columns)))
+            c.execute(create_query)
+            for data in reader:
+                c.execute(query, data)
+            query = "SELECT stat_seq_nodes FROM all_serv"
+            c.execute(query)
+            nodes = c.fetchall()
+            links = set()
 
-                    try:
-                            with open(unique_links, "w", newline="") as out:
-                                    writer = csv.writer(out)
-                                    writer.writerows(links)
-                    except IOError:
-                            log.add_message("Failed to access Station output file\nCheck that it is not already open\n")
-                            return
-        except IOError:
-            log.add_message("Generate an unpatched file first by importing and filtering data in the 'Import Rail' tab", color="RED")
-        conn.close()
+            for sequence in nodes:
+                sequence = sequence[0].split(', ')
+                for i in range(0, len(sequence)-1):
+                    links.add((sequence[i].lstrip(), sequence[i+1].lstrip()))
 
-        match_all_links(unpatched_file, unique_links, lookup_file, patched_file, log)
+            try:
+                with open(unique_links, "w", newline="") as out:
+                    writer = csv.writer(out)
+                    writer.writerows(links)
+            except IOError:
+                log.add_message("Failed to access Station output file\nCheck that it is not already open\n")
+                return
+    except IOError:
+        log.add_message("Generate an unpatched file first by importing and filtering data in the 'Import Rail' tab", color="RED")
+    conn.close()
+
+    match_all_links(unpatched_file, unique_links, lookup_file, patched_file, log)
 
 def match_all_links(unpatched_file, unique_links, lookup_file, patched_file, log):
 
@@ -126,7 +126,7 @@ def match_all_links(unpatched_file, unique_links, lookup_file, patched_file, log
                 file.write(str(pair.first) + "," + \
                            str(pair.last) + "," + \
                            ','.join(pair.inter) + '\n')
-                
+
     patch_all_routes(unpatched_file, new_link_lookup, patched_file, log)
 
 def patch_all_routes(unpatched_file, link_lookup, patched_file, log):
@@ -135,7 +135,7 @@ def patch_all_routes(unpatched_file, link_lookup, patched_file, log):
     c = conn.cursor()
 
     columns = []
-    
+
     with open(unpatched_file, 'r') as file:
         reader = csv.reader(file)
         columns = next(reader)
@@ -183,5 +183,3 @@ def patch_all_routes(unpatched_file, link_lookup, patched_file, log):
     conn.close()
 
     log.add_message("Finished Patching Routes",color="GREEN")
-
-
