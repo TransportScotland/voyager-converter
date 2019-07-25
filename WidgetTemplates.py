@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog
 from threading import Thread
+from TableTemplate import TableWidget
 
 class ThreadWithReturn(Thread):
     def __init__(self, group=None, target=None, name=None,
