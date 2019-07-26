@@ -52,29 +52,23 @@ X21-a and X21-b.
 To filter the services used, a day and date is input.
 Certain traffic operators can be filtered in post-processing
     
-### GUI
-The GUI allows specification of
-- Locations of files
-- Filtering options
-- Assigning operators
-
 ## Requirements
 The Cube Voyager network must already exist with a set of Cube Nodes and Links
 
 Required files (see existing versions for format):
-- Rail:
-  - MSN File - containing station info (Common Interface File)
-  - MCA File - containing timetable info (Common Interface File)
-  - Rail Node Lookup - maps TIPLOC to Cube Node
-  - Rolling Stock (optional) - seating and crush capacity for each origin-destination pair and time period
-- Bus:
-  - XML Directory - directory that contains all XML files to be processed (TransXChange format)
-  - Bus Node Lookup - maps ATCO to Cube Node
-- Other:
-  - Operator to Mode Lookup - service operators assigned a number for Cube and mode (Bus/Rail). Will be created as long as a path is specified
-  - Node File (patching interface) - every relevant node in the network
-  - Link File (patching interface) - every relevant link in the network
-  - Patching Override file - overrides for the patching process, see file for formatting guidance
+1. Rail:
+   - MSN File - containing station info (Common Interface File)
+   - MCA File - containing timetable info (Common Interface File)
+   - Rail Node Lookup - maps TIPLOC to Cube Node
+   - Rolling Stock (optional) - seating and crush capacity for each origin-destination pair and time period
+2. Bus:
+   - XML Directory - directory that contains all XML files to be processed (TransXChange format)
+   - Bus Node Lookup - maps ATCO to Cube Node
+3. Other:
+   - Operator to Mode Lookup - service operators assigned a number for Cube and mode (Bus/Rail). Will be created as long as a path is specified
+   - Node File (patching interface) - every relevant node in the network
+   - Link File (patching interface) - every relevant link in the network
+   - Patching Override file - overrides for the patching process, see file for formatting guidance
   
 Software requirements are:
 - Python 3
