@@ -8,15 +8,18 @@ import BusTab
 import CommonTab
 import SequenceReplaceTab
 import SummaryTab
+import RenumberTab
 
 ######################################################
 
 
 #Class that represents the overall gui
 class Application():
+    """Initialise the Voyager Converter application
+    """
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Cube Line Coder")
+        self.root.title("Cube PT Line Coder")
         self.buttons = []
         self.default_file = "default_variables.txt"
 
@@ -42,6 +45,8 @@ class Application():
                                               name="Sequence Replace")
         self.sum_tab = SummaryTab.SummaryTab(n_book, self.general, name="LIN Summary")
         n_book.pack(expand=1, fill="both")
+        self.renum_tab = RenumberTab.RenumberTab(n_book, self.general, name="LINE Renumber")
+        n_book.pack(expand=1, fill="both")
         
         self.load_defaults()
         
@@ -65,6 +70,7 @@ class Application():
                 self.general.files["ops"].set(self.defaults["operator_file"])
                 self.general.files["b_nod"].set(self.defaults["bus_node_lookup"] )
                 self.general.files["r_nod"].set(self.defaults["rail_node_lookup"] )
+                self.general.files["mode"].set(self.defaults["mode_lookup"])
                 self.general.files["user_p"].set(self.defaults["patching_overrides"])
                 self.ra_tab.files["MCA"].set(self.defaults["mca_data"])
                 self.ra_tab.files["MSN"].set(self.defaults["msn_data"] )
@@ -94,6 +100,7 @@ class Application():
             self.defaults["operator_file"] = self.general.files["ops"].get()
             self.defaults["bus_node_lookup"] = self.general.files["b_nod"].get()
             self.defaults["rail_node_lookup"] = self.general.files["r_nod"].get()
+            self.defaults["mode_lookup"] = self.general.files["mode"].get()
             self.defaults["patching_overrides"] = self.general.files["user_p"].get()
             self.defaults["mca_data"] = self.ra_tab.files["MCA"].get()
             self.defaults["msn_data"] = self.ra_tab.files["MSN"].get()

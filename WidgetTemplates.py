@@ -20,6 +20,9 @@ class ThreadWithReturn(Thread):
         
 
 class TextLog:
+    """Logging widget to easily format messages.
+    
+    """
     def __init__(self, frame, width=50, height=8):
         self.log_frame = ttk.Frame(frame, borderwidth=2, relief=tk.GROOVE)
         self.log_frame.pack(side="top", padx=5, pady=5, ipadx=5, ipady=5)
@@ -56,6 +59,9 @@ class TextLog:
         self.text.delete('1.0', tk.END)
 
 class CreateToolTip:
+    """Adds a tool tip to a tkinter widget
+    
+    """
     def __init__(self, widget, text="Widget Info"):
         self.wait_time = 500
         self.wrap_length = 180
@@ -108,6 +114,9 @@ class CreateToolTip:
             top_window.destroy()
             
 class LabelledEntry:
+    """Combined widget of label, entry box and optional browse button
+    
+    """
     def __init__(self, master, text, var, w=5, lw=20,pack_side="top", 
                  tool_tip_text="", anchor="w", char_limit=None, 
                  px=5, py=5, lx=10,ly=8):
@@ -189,8 +198,11 @@ class LabelledEntry:
             return
         self.variable.set(os.path.relpath(full_path, self.dir.get()))
         
-# Container for a scrollable listbox that can add/remove items
+
 class SelectBox:
+    """Container for a scrollable listbox that can add/remove items
+    
+    """
     def __init__(self, frame, h, w, r, c, elements=[],span=4,select_mode=tk.MULTIPLE):
         self.contents=[]
         self.list = tk.Listbox(frame, height=h, width=w, selectmode=select_mode)

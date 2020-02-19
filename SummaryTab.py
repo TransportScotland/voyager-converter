@@ -22,7 +22,10 @@ def kmp_search(s, seq):
     return occurences
         
 class SummaryTab:
-    def __init__(self, note_book, general,name=""):
+    """
+    
+    """
+    def __init__(self, note_book, general,name="", default_vars=None):
         self.current_dir = os.path.dirname(__file__)
         
         self.frame = ttk.Frame(note_book)

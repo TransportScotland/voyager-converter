@@ -6,6 +6,12 @@ from tkinter import filedialog
 from WidgetTemplates import CreateToolTip
 
 class CommonTab:
+    """Create a tab for general settings
+    
+    Parameters
+    ----------
+    
+    """
     def __init__(self, note_book, load_default_vars, save_default_vars, name="COMMON"):
         self.master = ttk.Frame(note_book)
         note_book.add(self.master, text=name)
@@ -14,7 +20,8 @@ class CommonTab:
                       "b_nod" : tk.StringVar(),
                       "r_nod" : tk.StringVar(),
                       "int" : tk.StringVar(),
-                      "user_p" : tk.StringVar()
+                      "user_p" : tk.StringVar(),
+                      "mode" : tk.StringVar()
                       }
         
         self.days = ["Monday", "Tuesday", "Wednesday", "Thursday", 
@@ -55,7 +62,7 @@ class CommonTab:
         self.create_file_widgets(self.file_select_frame)
         self.create_day_widgets(self.day_def_frame)
         self.create_date_widgets(self.date_def_frame)
-        self.create_headway_widgets(self.headway_frame)
+#        self.create_headway_widgets(self.headway_frame)
         self.create_GUI_widgets(self.GUI_frame, load_default_vars, save_default_vars)
 
     def to_path(self, key):
@@ -170,7 +177,7 @@ class CommonTab:
                 except ValueError:
                     return
 
-        a=ttk.Label(frame, text="Operator to Mode Lookup")
+        a=ttk.Label(frame, text="Operator Lookup")
         a.grid(column=0,row=5,sticky="w")
         CreateToolTip(a, text=("Contains information on which mode of "
                                "transport a service operator operates. This "
@@ -178,6 +185,13 @@ class CommonTab:
         ttk.Entry(frame, width=50, textvariable=self.files["ops"]).grid(column=0,row=6)
         ttk.Button(frame, text="Browse", 
                    command=lambda : set_file_path("ops")).grid(column=1,row=6)
+        
+        a=ttk.Label(frame, text="Mode Lookup")
+        a.grid(column=0,row=7,sticky="w")
+        CreateToolTip(a, text=("Defines the numbers assigned to each mode"))
+        ttk.Entry(frame, width=50, textvariable=self.files["mode"]).grid(column=0,row=8)
+        ttk.Button(frame, text="Browse", 
+                   command=lambda : set_file_path("mode")).grid(column=1,row=8)
 
         a=ttk.Label(frame, text="Bus Node Lookup")
         a.grid(column=0,row=1,sticky="w")
@@ -195,11 +209,11 @@ class CommonTab:
                    command=lambda : set_file_path("r_nod")).grid(column=1,row=4)
         
         a=ttk.Label(frame, text="Patching Overrides File")
-        a.grid(column=0,row=7,sticky="w")
+        a.grid(column=0,row=9,sticky="w")
         CreateToolTip(a, text="File containing the user overrides to be used in the patching process")
-        ttk.Entry(frame, width=50, textvariable=self.files["user_p"]).grid(column=0,row=8)
+        ttk.Entry(frame, width=50, textvariable=self.files["user_p"]).grid(column=0,row=10)
         ttk.Button(frame, text="Browse", 
-                   command=lambda : set_file_path("user_p")).grid(column=1,row=8)
+                   command=lambda : set_file_path("user_p")).grid(column=1,row=10)
         
 
     def add_frames(self):

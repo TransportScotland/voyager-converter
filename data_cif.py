@@ -5,10 +5,14 @@ import os.path
 import csv
 import traceback
 import sqlite3
+from statistics import mean
+import pandas as pd
 from enum import Enum
 from datetime import date, timedelta, datetime
 #from textwrap import TextWrapper
-from common_funcs import left, mid, process_lin
+from common_funcs import left, mid, process_lin, print_rail_lin
+from summarise_line_files import read_lin_file, single_add_rts_back_in
+from SequenceReplaceTab import replace_sequence
 
 os.chdir(os.path.dirname(__file__))
 
@@ -19,7 +23,6 @@ input_folder = 'Inputs'
 input_path = os.path.join(mypath, input_folder)
 
 ################### Assign output files and Databases #######
-
 
 
 ############### Declare dictionaries and variables #################
@@ -158,6 +161,8 @@ def parse_timetable(mca_path, station_lookup, day_filter,
     #step_interval = filesize / 100
     counter = 0
     
+    invalid_stops = set()
+    
     date_from = date(year=int(date_filter[0][2]), month=int(date_filter[0][1]), day=int(date_filter[0][0]))
     date_to = date(year=int(date_filter[1][2]), month=int(date_filter[1][1]), day=int(date_filter[1][0]))
     
@@ -284,7 +289,7 @@ def parse_timetable(mca_path, station_lookup, day_filter,
                     if LI is None:
                         # print(line)
                         continue
-                    if sub_pass.strip() != "":
+                    if sub_pass.strip() != "": # Passes this tiploc
                         service_details[UID].append([LI.split()[0].strip(), 
                                        "-%s" % sub_pass.strip()[:4], None]) 
                         #service_details[UID].append([LI.strip(), "9999", "9999"]) 
@@ -298,7 +303,6 @@ def parse_timetable(mca_path, station_lookup, day_filter,
     log.add_message("Processing required services") 
     
     for ID, service in service_details.items():
-    
     
         start_time = service[0][stat.DEPARTURE.value][:2] + ":" +  service[0][stat.DEPARTURE.value][2:]
         end_time = service[-1][stat.ARRIVAL.value][:2] + ":" +  service[-1][stat.ARRIVAL.value][2:]
@@ -323,6 +327,9 @@ def parse_timetable(mca_path, station_lookup, day_filter,
             #       reading in the data and using SQL
             # Headway definitions are hardcoded. Could be changed later...
             # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+            #
+            # Edit: these have been edited, as the third rule left 0.5h where
+            #   services would be missed
             
             # Determine headways by moving 'running_hour' to be correct
             time_format = "%H:%M"
@@ -355,8 +362,8 @@ def parse_timetable(mca_path, station_lookup, day_filter,
                     running_hour = h_start.time().hour 
                     break 
                 elif (starts_outside_model is False 
-                      and (h_start - timedelta(minutes=30) <= times_in_model[0] < h_start)
-                      and (h_start + timedelta(minutes=30) < times_in_model[1])):
+                      and (h_start - timedelta(minutes=30) <= times_in_model[0] < h_start)):
+                      #and (h_start + timedelta(minutes=30) < times_in_model[1])):
                     running_hour = h_start.time().hour 
                     break 
                 elif (starts_outside_model is True 
@@ -365,7 +372,7 @@ def parse_timetable(mca_path, station_lookup, day_filter,
                     break
                 else:
                     running_hour = 0
-            print(times_in_model[0], times_in_model[1], running_hour)
+#            print(times_in_model[0], times_in_model[1], running_hour)
             # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
         
         
@@ -378,10 +385,37 @@ def parse_timetable(mca_path, station_lookup, day_filter,
         if all(node == "999999" for node in node_list) is True:
             # Not within the network so can be ignored
             continue 
+        
+        # Flag any stops not in the lookup
+        times = [stop[stat.ARRIVAL.value] for stop in service]
+        for i, node in enumerate(node_list[1:]):
+            if node == "999999" and "-" not in times[i+1]:
+                invalid_stops.add(tiploc_list[i+1])
         # Format -> origin, destination, start date, end date, days, operator,  start time, end time, mid_time, hour, route, nodes
-        passing_times = ",".join([str(stop[stat.DEPARTURE.value]) if 
-                                  stop[stat.DEPARTURE.value] is not None else 
-                                  stop[stat.ARRIVAL.value] for stop in service])
+        
+        def get_pass_time(stop):
+            try:
+                if stop[stat.ARRIVAL.value] is None:
+                    return stop[stat.DEPARTURE.value]
+                if stop[stat.DEPARTURE.value] is None:
+                    return stop[stat.ARRIVAL.value]
+                # For nodes that stop, calculate the midtime
+                arr_time = (stop[stat.ARRIVAL.value][:2] + ":" +  
+                              stop[stat.ARRIVAL.value][2:])
+                dep_time = (stop[stat.DEPARTURE.value][:2] + ":" +  
+                              stop[stat.DEPARTURE.value][2:])
+                diff = (datetime.strptime(dep_time, "%H:%M") - 
+                        datetime.strptime(arr_time, "%H:%M"))
+                mid_time = (datetime.strptime(arr_time, "%H:%M") + 
+                            timedelta(seconds=diff.seconds/2))
+                return mid_time.strftime("%H%M")
+            except:
+                print("ERROR with ", stop)
+            
+        passing_times = ",".join([get_pass_time(stop) for stop in service])
+#        passing_times = ",".join([str(stop[stat.DEPARTURE.value]) if 
+#                                  stop[stat.DEPARTURE.value] is not None else 
+#                                  stop[stat.ARRIVAL.value] for stop in service])
         tiploc_string = ",".join(tiploc_list)
         node_string = ",".join(node_list)
         #Generate the line name from the user starting number
@@ -400,23 +434,32 @@ def parse_timetable(mca_path, station_lookup, day_filter,
                     tiploc_string, node_string, passing_times])
                 
     print(len(all_service))
+    with open("invalid_stops.txt", "w") as file:
+        for stop in invalid_stops:
+            file.write("%s\n" % stop)
+            
     return all_service
     
 def import_cif_callback(mca_path, station_path, node_lookup, operator_file, 
+                        mode_lookup,
                         save_timetables_path, day_filter, date_filter, 
                         line_start, headway_defs, widgets):
     try:
         log = widgets[2]
         button = widgets[1]
         import_cif_data(mca_path, station_path, node_lookup, operator_file, 
+                        mode_lookup,
                         save_timetables_path, day_filter, date_filter, 
                         line_start, headway_defs, widgets)
         button["state"] = "normal"
     except Exception as e:
         log.add_message("Exception: %s" % e, color="RED")
+        log.add_message("Traceback: %s" % "".join(
+                traceback.format_tb(e.__traceback__)), color="RED")
         button["state"] = "normal"
     
 def import_cif_data(mca_path, station_path, node_lookup, operator_file, 
+                    mode_file,
                     save_timetables_path, day_filter, date_filter, 
                     line_start, headway_defs, widgets):
     
@@ -465,7 +508,7 @@ def import_cif_data(mca_path, station_path, node_lookup, operator_file,
             
     # Read mode lookup table 
     try:
-        with open("mode_lookup.csv", "r") as lookup:
+        with open(mode_file, "r") as lookup:
             reader = csv.reader(lookup)
             columns = next(reader)
             for row in reader:
@@ -476,7 +519,7 @@ def import_cif_data(mca_path, station_path, node_lookup, operator_file,
                 mode_num_dict[mode_name] = mode_num
             mode_index = max([int(x) for x in mode_num_dict.values()]) + 1
     except FileNotFoundError:
-        with open("mode_lookup.csv", "w") as lookup:
+        with open(mode_file, "w") as lookup:
             writer = csv.writer(lookup)
             writer.writerow(["Mode", "Num"])
             
@@ -499,6 +542,12 @@ def import_cif_data(mca_path, station_path, node_lookup, operator_file,
     with open("Intermediate\\mca_out.csv", "w", newline="") as file:
         w = csv.writer(file)
         w.writerows([[k] + v for k, v in data.items()])
+        
+    cols = ['ID', 'Origin', 'Destination', 'ROUTE', 'linename', 'fromdate',
+       'todate', 'days', 'operator', 'mode', 'starttime', 'endtime', 'midtime',
+       'period', 'tiploc', 'node', 'times']
+    df = pd.DataFrame([[k] + v for k, v in data.items()], columns=cols)
+    df.to_csv("Intermediate\\mca_out.csv")
     
     cur.executemany(("INSERT INTO services (uniqueID, origin, destination, "
                      "long_name, line, start_date, end_date, days, operator, "
@@ -556,7 +605,7 @@ def import_cif_data(mca_path, station_path, node_lookup, operator_file,
                 file.write(line + '\n')
 
     # # Write mode lookup table ##
-    with open("mode_lookup.csv", "w", newline="") as lookup:
+    with open(mode_file, "w", newline="") as lookup:
         writer = csv.writer(lookup)
         writer.writerow(["Mode", "Num"])
         for key in mode_num_dict:
@@ -593,7 +642,7 @@ FROM (
 WHERE (((Headways.[Headway]) Is Not Null))
 GROUP BY route'''
 
-    cur.execute(headway_query)
+    """cur.execute(headway_query)
 
     ## Save to file so that post-processing functions can use it quickly ##
     columns = ['uniqueID', 'line', 'long_name','operator','Times','Headways','pass_times','route','nodes']
@@ -604,7 +653,139 @@ GROUP BY route'''
     with open(save_timetables_path,'w',newline='') as file:
         writer=csv.writer(file)
         writer.writerow(columns)
-        writer.writerows(data)
+        writer.writerows(data)"""
+        
+        
+    def calc_head(df):
+        if df["period"] == 10:
+            fac = 360
+        else:
+            fac = 180
+        return fac // df["headway"]
+    
+    def period_name(df):
+        if df["period"] == 10:
+            name = 2
+        elif df["period"] == 16:
+            name = 3
+        else:
+            name = 1
+        return name
+    
+    def cut_rt(df, tol=0.05):
+        max_rt = df.max()
+        min_rt = df.min()
+        range_rt = max_rt - min_rt
+        if range_rt / min_rt > tol:
+            bins = 2
+        else:
+            bins = 1
+        return pd.cut(df, bins=bins)
+    
+    """# Default Running times
+    df = pd.read_csv("Intermediate\\mca_out.csv")
+    df["STOPS"] = df.times.str.split(",").apply(
+            lambda x: ",".join(["True" if "-" in y else "False" for y in x]))
+    a = df.loc[df.period != 0].groupby(
+            ["operator", "ROUTE", "linename", "period", 
+             "tiploc", "node", "STOPS"]).agg(
+             {"times":"first", "todate":"count","ID":"first"}).reset_index().rename(
+                     {"todate":"headway"}, axis=1)
+    a["headway"] = a.apply(calc_head, axis=1)
+    a["time_period"] = a.apply(period_name, axis=1)
+    b = a.groupby(["operator", "ROUTE", "linename", "tiploc", "node", "STOPS"]).agg(
+            {"ID":"first","times":"first",
+             "time_period":lambda x: ','.join([str(y) for y in x]), 
+             "headway":lambda x: ','.join([str(y) for y in x])}).reset_index()
+    out_cols = ["uniqueID", "operator", "long_name", "line", "times", 
+                "headways", "pass_times", "route", "nodes"]
+    b[["ID", "operator", "ROUTE", "linename", "time_period", "headway", 
+       "times", "tiploc", "node"]].to_csv(save_timetables_path, header=out_cols,
+       index=False)"""
+    
+    # Get the minimum running time
+    df = pd.read_csv("Intermediate\\mca_out.csv")
+    df.starttime = pd.to_datetime(df.starttime, format="%H:%M")
+    df.endtime = pd.to_datetime(df.endtime, format="%H:%M")
+    df.diff = df.endtime - df.starttime
+    df["diff_s"] = df.diff.dt.seconds // 60
+    df["stop_pat"] = df.times.apply(lambda x : "".join(c for c in x if not c.isnumeric()))
+    df1 = df.loc[df.period != 0].groupby(
+        ["operator", "ROUTE", "linename", "tiploc", "node", "period", "stop_pat"]).agg(
+        {"diff_s":"idxmin", "todate":"count"}).reset_index().rename({"todate":"headway"}, axis=1)
+    df1["idxmin"] = df1['diff_s'].map(df['times'])
+    df1["ID"] = df1["diff_s"].map(df["ID"])
+    df1["diff_s"] = df1['diff_s'].map(df['diff_s'])
+    df1 = df1.rename(columns={'idxmin':'times'})
+    df1["headway"] = df1.apply(calc_head, axis=1)
+    df1["time_period"] = df1.apply(period_name, axis=1)
+    df2 = df1.groupby(["operator", "ROUTE", "linename", "tiploc", "node", "stop_pat"]).agg(
+                {"ID":"first","diff_s":"idxmin",
+                 "time_period":lambda x: ','.join([str(y) for y in x]), 
+                 "headway":lambda x: ','.join([str(y) for y in x])}).reset_index()
+    df2["times"] = df2['diff_s'].map(df1['times'])
+    out_cols = ["uniqueID", "operator", "long_name", "line", "times", 
+                    "headways", "pass_times", "route", "nodes"]
+    cols = ["ID", "operator", "ROUTE", "linename", "time_period", "headway", 
+           "times", "tiploc", "node"]
+    df2[cols].to_csv(save_timetables_path, header=out_cols,
+           index=False)
+    
+    # Get the maximum running time
+    """df = pd.read_csv("Intermediate\\mca_out.csv")
+    df.starttime = pd.to_datetime(df.starttime, format="%H:%M")
+    df.endtime = pd.to_datetime(df.endtime, format="%H:%M")
+    df.diff = df.endtime - df.starttime
+    df["diff_s"] = df.diff.dt.seconds // 60
+    df["stop_pat"] = df.times.apply(lambda x : "".join(c for c in x if not c.isnumeric()))
+    df1 = df.loc[df.period != 0].groupby(
+        ["operator", "ROUTE", "linename", "tiploc", "node", "period", "stop_pat"]).agg(
+        {"diff_s":"idxmax", "todate":"count"}).reset_index().rename({"todate":"headway"}, axis=1)
+    df1["idxmax"] = df1['diff_s'].map(df['times'])
+    df1["ID"] = df1["diff_s"].map(df["ID"])
+    df1["diff_s"] = df1['diff_s'].map(df['diff_s'])
+    df1 = df1.rename(columns={'idxmax':'times'})
+    df1["headway"] = df1.apply(calc_head, axis=1)
+    df1["time_period"] = df1.apply(period_name, axis=1)
+    df2 = df1.groupby(["operator", "ROUTE", "linename", "tiploc", "node", "stop_pat"]).agg(
+                {"ID":"first","diff_s":"idxmax",
+                 "time_period":lambda x: ','.join([str(y) for y in x]), 
+                 "headway":lambda x: ','.join([str(y) for y in x])}).reset_index()
+    df2["times"] = df2['diff_s'].map(df1['times'])
+    out_cols = ["uniqueID", "operator", "long_name", "line", "times", 
+                    "headways", "pass_times", "route", "nodes"]
+    cols = ["ID", "operator", "ROUTE", "linename", "time_period", "headway", 
+           "times", "tiploc", "node"]
+    df2[cols].to_csv(save_timetables_path, header=out_cols,
+           index=False)"""
+    
+    """# Replace with bands for running times
+    df = pd.read_csv("Intermediate\\mca_out.csv")
+    df.starttime = pd.to_datetime(df.starttime, format="%H:%M")
+    df.endtime = pd.to_datetime(df.endtime, format="%H:%M")
+    df.diff = df.endtime - df.starttime
+    df["diff_s"] = df.diff.dt.seconds // 60
+    df["stop_pat"] = df.times.apply(lambda x : "".join(c for c in x if not c.isnumeric()))
+    df["band"] = df.loc[df.period != 0].groupby(["operator", "ROUTE", "linename", "period", 
+             "tiploc", "node", "stop_pat"]).diff_s.apply(cut_rt, tol=0.05)
+    
+    a = df.loc[df.period != 0].groupby(
+            ["operator", "ROUTE", "linename", "period", 
+             "tiploc", "node", "STOPS"]).agg(
+             {"times":"first", "todate":"count","ID":"first"}).reset_index().rename(
+                     {"todate":"headway"}, axis=1)
+    a["headway"] = a.apply(calc_head, axis=1)
+    a["time_period"] = a.apply(period_name, axis=1)
+    b = a.groupby(["operator", "ROUTE", "linename", "tiploc", "node", "STOPS"]).agg(
+            {"ID":"first","times":"first",
+             "time_period":lambda x: ','.join([str(y) for y in x]), 
+             "headway":lambda x: ','.join([str(y) for y in x])}).reset_index()
+    out_cols = ["uniqueID", "operator", "long_name", "line", "times", 
+                "headways", "pass_times", "route", "nodes"]
+    b[["ID", "operator", "ROUTE", "linename", "time_period", "headway", 
+       "times", "tiploc", "node"]].to_csv(save_timetables_path, header=out_cols,
+       index=False)"""
+    
         
     log.add_message("Finished", color="GREEN")
     log.add_message("Found %d Entries" % num_entries)
@@ -620,11 +801,13 @@ GROUP BY route'''
 #       log             = Log for the GUI
 #
 ##################################################################################
-def print_lin_file(infile, outlin, operator_lookup, headway_defs, log, 
+def print_lin_file(infile, outlin, operator_lookup, mode_lookup, headway_defs, log, 
                    rolling_stock_file=None, tiploc_lookup_file=None,
                    include_crowding=False, include_crush=False):
 
     log.add_message("Printing LIN File")
+
+    number_user_classes = 6
 
     conn = sqlite3.connect(':memory:')
     cur = conn.cursor()
@@ -637,6 +820,7 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
     headway_periods = [int(x.lstrip(' ')) for x in headway_defs[0].split(',')]
     headway_lengths = [int(headway_periods[i]-headway_periods[i-1])*60 for i in range(1, len(headway_periods))]
     print(headway_lengths)
+    
 
     with open(infile, "r") as db:
         reader = csv.reader(db)
@@ -658,7 +842,7 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
             num_dict[line[1]] = line[2]
             mode_dict[line[1]] = line[0]
                 
-    with open("mode_lookup.csv", "r") as file:
+    with open(mode_lookup, "r") as file:
         reader = csv.reader(file)
         _ = next(reader)
         lines = []
@@ -688,7 +872,7 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
             r = csv.DictReader(lookup)
             tiploc_lookup = {row["NAME"].upper():row["TIPLOC"].upper() for row
                              in r}
-        print(tiploc_lookup)
+        #print(tiploc_lookup)
     except FileNotFoundError:
         log.add_message("Could not find tiploc lookup file %s" % tiploc_lookup_file)
         stock_data = {}
@@ -710,10 +894,9 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
             file.write("""OPERATOR NUMBER=%s LONGNAME="%s" NAME="%s"\n""" % (num, name, code))
             
         file.write("""WAITCRVDEF NUMBER=1 LONGNAME="Wait Curve 1 - Non-London Inter Urban" NAME="WC1" ,
-           CURVE=5-5,10-10,15-14,20-18,
-           30-23,40-26,60-31,90-39,
-           120-47,180-63
-           """)
+           CURVE=5-2.5,10-5,15-7,20-9,
+           30-11.5,40-13,60-15.5,90-19.5,
+           120-23.5,180-31.5\n""")
         if include_crowding is True:
             file.write("""CROWDCRVDEF NUMBER=1 NAME="Crowd Curve " ,
             CURVE=0-1,20-1.09,40-1.18,60-1.26,
@@ -739,10 +922,10 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
         cur.execute("SELECT line, long_name, operator, Times, Headways, pass_times, route, nodes FROM all_serv")
         service_dict = {}
         for row in cur.fetchall():
-            key = row[1] + " - " + row[7]
+            key = row[1] + " - " + row[7] + " - " + row[5]
             service_dict.setdefault(key, [])
             service_dict[key].append(row)
-        
+        print(list(service_dict.keys())[0], service_dict[list(service_dict.keys())[0]])
         condensed_services = []
         for k, v in service_dict.items():
             if len(v) > 1:
@@ -760,6 +943,7 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
                 new_service = list(v[0])
                 new_service[3] = ",".join(str(x) for x in headways.keys())
                 new_service[4] = ",".join(str(x) for x in headways.values())
+                print("Combined ", k)
             else:
                 new_service = v[0]
             condensed_services.append(new_service)
@@ -804,9 +988,9 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
 #                origin = tiploc_lookup.get(origin.strip())
 #                destination = tiploc_lookup.get(destination.strip())
                 for k in period_result:
-                    period_result[k] += ("CROWDCURVE[1]=1, CROWDCURVE[2]=1, "
-                                       "CROWDCURVE[3]=1, CROWDCURVE[4]=1, "
-                                       "CROWDCURVE[5]=1, ")
+                    crowd_string = ", ".join(["CROWDCURVE[%d]=1" % (x + 1) for 
+                                              x in range(number_user_classes)])
+                    period_result[k] += crowd_string + ", "
                     # If there is no data use default of 999
                     seat_cap, crush_cap = stock_data.get(
                             (origin, destination),{}).get(k, ["999","999"])
@@ -834,8 +1018,15 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
                 h_query += "HEADWAY[{0}]={1}, ".format(headway_names[i], format_head[i])
             all_result = h_query
             if include_crowding is True:
-                all_result += 'CROWDCURVE[1]=1, CROWDCURVE[2]=1, CROWDCURVE[3]=1, CROWDCURVE[4]=1, CROWDCURVE[5]=1, '
-            all_result += 'SEATCAP=999, CRUSHCAP=999, LOADDISTFAC=100, '
+                crowd_string = ", ".join(["CROWDCURVE[%d]=1" % (x + 1) for 
+                                              x in range(number_user_classes)])
+                all_result += crowd_string + ", "
+            origin, destination = [x.strip() for x in row[1].split("-")[:2]]
+            route_stock = stock_data.get((origin, destination), {})
+            seat_cap, crush_cap = route_stock.get("AM", route_stock.get("PM",
+                                                  route_stock.get("IP", ["999", "999"])))
+            all_result += "SEATCAP=%s, CRUSHCAP=%s, LOADDISTFAC=100, " % (seat_cap,
+                                                                          crush_cap)
             if include_crowding is True:
                 all_result += 'CROWDCURVE[1]=1, '
 
@@ -903,16 +1094,111 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log,
             result = process_lin(result, width=70)
             file.write(result)
             file.write('\n\n')
+            
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Additional part now does some post-processing for output lines files    #
+    # Previously was a separate process so reads files in/out a few times     #
+    
+    # Input Line File path
+    am_line = outlin.upper().replace(".LIN", "_AM.LIN")
+    ip_line = am_line.replace("AM.LIN", "IP.LIN")
+    pm_line = am_line.replace("AM.LIN", "PM.LIN")
+    in_line_files = [am_line, ip_line, pm_line]
+    data = []
+    for linefilepath in in_line_files:
+        data.append({x["LINE NAME"]:x for x in read_lin_file(linefilepath)})
+    
+    # Fill in missing rolling stock data
+    for i, period_data in enumerate(data):
+        # Calculate average values from available data - by operator and overall
+        operator_stock_averages = {}
+        for line_name, service in period_data.items():
+            operator = service["OPERATOR"]
+            seat_cap, crush_cap = int(service["SEATCAP"]), int(service["CRUSHCAP"])
+            if seat_cap == 999:
+                print("%s has no rolling stock data" % service["LONGNAME"])
+                continue
+            operator_stock_averages.setdefault(operator, [])
+            operator_stock_averages[operator].append([seat_cap, crush_cap])
+        for op, vals in operator_stock_averages.items():
+            seat_cap = mean([x[0] for x in vals])
+            crush_cap = mean([x[1] for x in vals])
+            operator_stock_averages[op] = [seat_cap, crush_cap]
+        average_seat_cap = mean([x[0] for x in operator_stock_averages.values()])
+        average_crush_cap = mean([x[1] for x in operator_stock_averages.values()])
+        # Replace missing values with the calculated averages
+        for line_name, service in period_data.items():
+            operator = service["OPERATOR"]
+            seat_cap, crush_cap = int(service["SEATCAP"]), int(service["CRUSHCAP"])
+            if seat_cap == 999:
+                service["SEATCAP"] = str(int(float(operator_stock_averages.get(
+                        operator, [average_seat_cap, None])[0])))
+                service["CRUSHCAP"] = str(int(float(operator_stock_averages.get(
+                        operator, [None, average_crush_cap])[1])))
+                print("Assigned %s and %s to %s" % (service["SEATCAP"], 
+                                                    service["CRUSHCAP"], 
+                                                    service["LONGNAME"]))
+            data[i][line_name] = service
+            
+    # Set Global variables
+    new_variables = {
+        "LOADDISTFAC" : "80"
+    }
+    for i, period_data in enumerate(data):
+        for line_name, service in period_data.items():
+            for var_name, var_value in new_variables.items():
+                data[i][line_name][var_name] = var_value
+                
+    # Print the new files
+    for in_lin_file in in_line_files:
+        output_lin_file = in_lin_file#.replace(".LIN", "_PATCHED.LIN")
+        with open(output_lin_file, "w", newline="") as file:
+            file.write(";;<<PT>><<LINE>>;;\n")
+            for service in data[in_line_files.index(in_lin_file)].values():
+                # If the service is flagged with None, can be ignored
+                if service == None:
+                    continue
+                new_service = single_add_rts_back_in(service, [])
+                line_string = ", ".join([k + "=" + v 
+                                         for k, v in new_service.items() if k != "N" and k != "RT"])
+                line_string += ", N=" + ", ".join(new_service["N"])
+                result = process_lin(line_string)
+                file.write(result)
+                file.write("\n\n")
+    
+    # Replace incorrect sequences - Glasgow/Edinburgh routes
+    sequence_replacement_file = "_rail_sequence_patches.txt"
+    patches = """100204,-100217,-100247,-100241,-100431,-100234,-100432:100204,-100434,-100437,-100438,-100433,-100432
+-100432,-100234,-100431,-100241,-100247,-100217,100204:-100432,-100433,-100438,-100437,-100434,100204"""
+    with open(sequence_replacement_file, "w") as file:
+        file.write(patches)
+        
+    for in_lin_file in in_line_files:
+        input_line_file = in_lin_file#.replace(".LIN", "_PATCHED.LIN")
+        # Replace the sequences "in place"
+        replace_sequence(sequence_replacement_file, input_line_file, input_line_file)
+        
+    os.remove(sequence_replacement_file)
+    
+    # Finally read the file in and print in the standard format
+    data = []
+    for linefilepath in in_line_files:
+        data.append({x["LINE NAME"]:x for x in read_lin_file(linefilepath)})
+    print_rail_lin(data, in_line_files)
+    #                                                                         #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+            
     log.add_message("Finished Printing LIN File", color="GREEN")
     log.add_message("%d services used" % len(condensed_services), color="GREEN")
-    log.add_message("Missing rolling stock: AM = %d, IP = %d, PM = %d" % (
-            missing_rolling_stock["AM"], missing_rolling_stock["IP"], missing_rolling_stock["PM"]))
+    #log.add_message("Missing rolling stock: AM = %d, IP = %d, PM = %d" % (
+    #        missing_rolling_stock["AM"], missing_rolling_stock["IP"], missing_rolling_stock["PM"]))
     conn.close()
 
 
 # Filter out any services by operator or operating period
 #Produces file of all unique links in the services
-def CIF_post_filter(period, infile, outfile, outlinfile, op_list, operator_lookup, log):
+def CIF_post_filter(period, infile, outfile, outlinfile, op_list, operator_lookup, 
+                    mode_lookup, log):
 
     log.add_message("Filtering operators and operating period\n")
 
@@ -941,6 +1227,8 @@ def CIF_post_filter(period, infile, outfile, outlinfile, op_list, operator_looku
         except IOError:
             log.add_message("Failed to access Station output file\nCheck that it is not already open\n", color="RED")
             return
+        
+        
 
     conn.close()
 

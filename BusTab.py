@@ -11,7 +11,7 @@ import patch_routes as patch
 from WidgetTemplates import CreateToolTip, LabelledEntry, TextLog, ThreadWithReturn, SelectBox
 
 class BusTab:
-    def __init__(self, note_book, general, name="Bus"):
+    def __init__(self, note_book, general, name="Bus", default_vars={}):
         self.master = ttk.Frame(note_book)
         note_book.add(self.master, text=name)
         self.gen = general
@@ -60,6 +60,11 @@ class BusTab:
                                         length=500,mode="determinate")
         self.progress.grid(row=1,column=1)
         self.log = TextLog(self.log_frame)
+        self.load_defaults(default_vars)
+        
+    def load_defaults(self, default_vars={}):
+        for k, default in default_vars.items():
+            self.files[k] = default
         
     def read_xml_files(self):
         days_filter = [x.get() for x in self.gen.selected_days]

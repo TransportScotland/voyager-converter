@@ -9,7 +9,7 @@ import data_cif as ri
 from WidgetTemplates import CreateToolTip, LabelledEntry, TextLog, SelectBox, ThreadWithReturn
 
 class RailTab:
-    def __init__(self, note_book, general, name="Rail"):
+    def __init__(self, note_book, general, name="Rail", default_vars={}):
         self.master = ttk.Frame(note_book)
         note_book.add(self.master, text=name)
         self.gen = general
@@ -54,6 +54,11 @@ class RailTab:
         self.progress = ttk.Progressbar(self.progress_frame,orient=tk.HORIZONTAL,length=500,mode="determinate")
         self.progress.grid(row=1,column=1)
         self.log = TextLog(self.log_frame)
+        self.load_defaults(default_vars)
+        
+    def load_defaults(self, default_vars={}):
+        for k, default in default_vars.items():
+            self.files[k] = default
         
     '''def create_print_lin_widgets(self,frame):
         ttk.Button(frame, text="4. Print LIN File",style="DS.TButton", command=lambda : self.read_file("lin")).grid(column=0, row=3, padx=5, pady=5, ipady=5, ipadx=5,sticky="we")
@@ -124,7 +129,7 @@ class RailTab:
         
         ttk.Label(top_frame, text=("Usage: Enter paths to network files "
                                    "(Nodes and Links) to fill in gaps "
-                                   "between bus stops")).pack(side="top")
+                                   "between rail stops")).pack(side="top")
         
         node = LabelledEntry(file_frame, "Node File", node_file, w=50, 
                              tool_tip_text=("CSV File that contains all rail nodes "
@@ -203,6 +208,7 @@ class RailTab:
             
             f_args = (self.to_path("MCA"), self.to_path("stn"), 
                       self.gen.to_path("r_nod"), self.gen.to_path("ops"), 
+                      self.gen.to_path("mode"),
                       self.to_path("MCA_a"), days_filter, date_filters, 
                       self.line_start.get(), custom_headways, widget_list)
             threading.Thread(target=ri.import_cif_callback, args=(f_args)).start()
@@ -228,14 +234,16 @@ class RailTab:
             custom_headways = (self.gen.head_defs.get(), self.gen.head_name.get())
             ri.CIF_post_filter("rail", self.to_path("MCA_a"), self.to_path("MCA_f"), \
                                self.to_path("lin"), self.used_operators.get_contents(), \
-                               self.gen.to_path("ops"), self.log)
+                               self.gen.to_path("ops"), self.gen.to_path("mode"),
+                               self.log)
             if self.gen.auto_open.get() == 1:
                 os.startfile(self.to_path("MCA_f"))
                 
         elif key == "lin":
             custom_headways = (self.gen.head_defs.get(), self.gen.head_name.get())
             ri.print_lin_file(self.to_path("MCA_p"),self.to_path("lin"),
-                              self.gen.to_path("ops"),custom_headways, self.log,
+                              self.gen.to_path("ops"),self.gen.to_path("mode"),
+                              custom_headways, self.log,
                               rolling_stock_file=self.to_path("stock"),
                               tiploc_lookup_file=self.to_path("t_name"))
             if self.gen.auto_open.get() == 1:

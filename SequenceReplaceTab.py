@@ -2,8 +2,9 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 from common_funcs import process_lin
-from WidgetTemplates import LabelledEntry, TextLog
+from WidgetTemplates import LabelledEntry, TextLog, CreateToolTip
 from summarise_line_files import read_lin_file, single_add_rts_back_in
+from update_cube_operators import update_cube_operators
 
 def all_bin(seq):
     tot = 2**len(seq)
@@ -63,6 +64,7 @@ class SequenceReplaceTab:
         self.lin_input = tk.StringVar()
         self.lin_output = tk.StringVar()
         self.changes_file = tk.StringVar()
+        self.old_ops_file = tk.StringVar()
         #self.lin_input.set(os.path.join("Output Files", "rail_lin.lin"))
         #self.lin_output.set(os.path.join("Output Files", "rail_lin_2.lin"))
         self.changes_file.set(os.path.join("Node Lookup Files", "sequence_patch.txt"))
@@ -85,6 +87,13 @@ class SequenceReplaceTab:
                                                     "(Must include start and "
                                                     "end nodes)"))
         changes_file.add_browse(self.current_dir)
+        
+        old_ops = LabelledEntry(input_frame, "Old Operator lookup", 
+                                     self.old_ops_file, w=50, 
+                                     tool_tip_text=("Operator lookup containing "
+                                                    "the operators to be replaced"))
+        old_ops.add_browse(self.current_dir)
+        
         lin_output = LabelledEntry(input_frame, "Output File", self.lin_output, 
                                    w=50, tool_tip_text="Path to save the new LIN file to")
         lin_output.add_browse(self.current_dir, save=True, types=(("LIN", "*.lin")), extension=".lin")
@@ -93,6 +102,14 @@ class SequenceReplaceTab:
                                  command=lambda: self.callback_view_file(self.changes_file.get())).pack(side="left")
         read_button = ttk.Button(button_frame, text="Patch Sequences", style="DS.TButton",
                                  command=self.replace_sequence).pack(side="left")
+        operator_button = ttk.Button(button_frame, text="Update Operators", style="DS.TButton",
+                                 command=self.replace_operators)
+        operator_button.pack(side="left")
+        CreateToolTip(operator_button, text=("Update the operator numbers in a "
+                                             "lines file, with a new lookup file. "
+                                              "The new operator lookup should be the "
+                                              "one in the general tab and the "
+                                              "old ones in the box above."))
 
         self.log_frame = ttk.LabelFrame(self.frame, text="Log")
         self.log_frame.pack(side="top")
@@ -129,8 +146,14 @@ class SequenceReplaceTab:
                 self.callback_view_file(file_path)
                 
 
+    def replace_operators(self):
+        update_cube_operators(self.lin_input.get(), self.lin_output.get(), 
+                              self.gen.to_path("ops"), self.old_ops_file.get())
+        self.log.add_message("Replaced operators with new numbers", color="GREEN")
+
     def replace_sequence(self):
         # Read the patching file 
+        exclude_lines = {}
         with open(self.changes_file.get(), "r") as file:
             data = file.readlines()
             seq_dict = {}
@@ -147,10 +170,21 @@ class SequenceReplaceTab:
                     for seq in old_seqs:
                         seq_dict[tuple(seq)] = new
                 else:
-                    old, new = row.split(":")
+                    exclude = None
+                    if row[:3] == "NOT":
+                        exclude = row[row.index("{")+1:row.index("}")]
+                        exclude = exclude.split(",")
+                        row = row[row.index("}")+1:]
+                    try:
+                        old, new = row.split(":")
+                    except:
+                        print(row)
+                        return
                     old = old.split(",")
                     new = new.split(",")
                     seq_dict[tuple(old)] = new
+                    if exclude is not None:
+                        exclude_lines[tuple(old)] = exclude
         
         lines = read_lin_file(self.lin_input.get())
         
@@ -166,11 +200,14 @@ class SequenceReplaceTab:
                 node_seq = service["N"]
                 new_nodes = node_seq
                 for old_seq, new_seq in seq_dict.items():
+                    if service["LINE NAME"].strip("\"").split("-")[0] in exclude_lines.get(old_seq, []):
+                        continue
                     old_seq = [x for x in old_seq]
                     for index in reversed(kmp_search(node_seq, old_seq)):
                         num_replacements += 1
                         replacement_info.append([index, len(new_seq)-len(old_seq)])
-                        self.log.add_message("Replaced a sequence in %s, position %d" % (service["LINE NAME"], index))
+                        self.log.add_message("Replaced a sequence in %s, position %d" % (
+                                service["LINE NAME"], index))
                         print(("Replaced a sequence in %s, position %d" % (service["LINE NAME"], index)))
                         del new_nodes[index:index + len(old_seq)]
                         for j, node in enumerate(new_seq):
@@ -187,5 +224,70 @@ class SequenceReplaceTab:
         self.log.add_message("Replaced %d occurences" % num_replacements)
                     
                     
-                    
+# Function for replacing sequences outside of the tab
+def replace_sequence(changes_file, lin_input, lin_output):
+	# Read the patching file 
+	exclude_lines = {}
+	with open(changes_file, "r") as file:
+		data = file.readlines()
+		seq_dict = {}
+		for row in data:
+			if  row[0] == "#" or row == "\n":
+				continue
+			row = row.strip("\n").strip()
+			if row[0] == "A":
+				row = row[1:]
+				old, new = row.split(":")
+				old = old.split(",")
+				new = new.split(",")
+				old_seqs = all_node_variations(old)
+				for seq in old_seqs:
+					seq_dict[tuple(seq)] = new
+			else:
+				exclude = None
+				if row[:3] == "NOT":
+					exclude = row[row.index("{")+1:row.index("}")]
+					exclude = exclude.split(",")
+					row = row[row.index("}")+1:]
+				try:
+					old, new = row.split(":")
+				except:
+					print(row)
+					return
+				old = old.split(",")
+				new = new.split(",")
+				seq_dict[tuple(old)] = new
+				if exclude is not None:
+					exclude_lines[tuple(old)] = exclude
+	
+	lines = read_lin_file(lin_input)
+	print("Seq dict = ", seq_dict)
+	
+	with open(lin_output, "w", newline="") as file:
+		file.write(";;<<PT>><<LINE>>;;\n")
+		num_replacements = 0
+		
+		for service in lines:
+			replacement_info = []
+			# Check if anything needs replacing
+			line_string = ""
+			node_seq = service["N"]
+			new_nodes = node_seq
+			for old_seq, new_seq in seq_dict.items():
+				if service["LINE NAME"].strip("\"").split("-")[0] in exclude_lines.get(old_seq, []):
+					continue
+				old_seq = [x for x in old_seq]
+				for index in reversed(kmp_search(node_seq, old_seq)):
+					num_replacements += 1
+					replacement_info.append([index, len(new_seq)-len(old_seq)])
+					print("Replaced a sequence in %s, position %d" % (service["LINE NAME"], index))
+					del new_nodes[index:index + len(old_seq)]
+					for j, node in enumerate(new_seq):
+						new_nodes.insert(index + j, node)
+			service = single_add_rts_back_in(service, replacement_info)
+			line_string += ", ".join([k + "=" + v for k, v in service.items() if k != "N" and k != "RT"])
+			line_string += ", N=" + ", ".join(new_nodes)
+			result = process_lin(line_string)
+			file.write(result)
+			file.write('\n\n')
                     

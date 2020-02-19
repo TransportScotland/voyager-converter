@@ -422,10 +422,11 @@ def patch_selected(node_file, link_file, unpatched_file,
                               patched_file, progress_inc, patch_others=patch_others)
 #    for path in no_path:
 #        print(path, path in unique_pairs)
-    if working_sequence is not None:
-        with open("line_sequences.txt", "w", newline="") as file:
-            for line, end_line in working_sequence:
-                file.write(" ".join(line) + " " + str(end_line) + "\n\r")
+    
+#    if working_sequence is not None:
+#        with open("line_sequences.txt", "w", newline="") as file:
+#            for line, end_line in working_sequence:
+#                file.write(" ".join(line) + " " + str(end_line) + "\n\r")
     return len(paths), len(errors)
     
 def create_override_file(path_file, override_file):
@@ -437,7 +438,8 @@ def create_override_file(path_file, override_file):
         for ab, path in paths.items():
             file.write("S:%s:%s:%s\r\n" % (ab[0], ab[1], path))
      
-def distance_breadth_first_search(adjacency_dict, distance_dict, origin, destination, node_list, max_depth=100):
+def distance_breadth_first_search(adjacency_dict, distance_dict, origin, 
+                                  destination, node_list, max_depth=100):
     q = Queue()
     q.push((origin,0))
     previous_node = {}

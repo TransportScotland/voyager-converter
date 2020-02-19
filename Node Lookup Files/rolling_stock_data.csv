@@ -1,0 +1,418 @@
+O_TIPLOC,D_TIPLOC,PERIOD,SEATS,CRUSH
+Aberdeen,Dyce,PM,189,273
+Aberdeen,Edinburgh,AM,189,273
+Aberdeen,Edinburgh,IP,189,273
+Aberdeen,Glasgow queen street,AM,189,273
+Aberdeen,Glasgow queen street,IP,189,273
+Aberdeen,Glasgow queen street,PM,189,273
+Aberdeen,Inverness,AM,136,172
+Aberdeen,Inverness,IP,183,240
+Aberdeen,Inverness,PM,272,344
+Aberdeen,Inverurie,IP,189,273
+Aberdeen,Inverurie,PM,204,258
+Aberdeen,Stonehaven,PM,189,273
+Airdrie,Balloch,AM,300,422
+Airdrie,Balloch,IP,300,422
+Airdrie,Balloch,PM,300,422
+Alloa,Edinburgh,AM,272,344
+Alloa,Glasgow queen street,AM,304,399
+Alloa,Glasgow queen street,IP,155,207
+Alloa,Glasgow queen street,PM,174,221
+Anderston,Carstairs,PM,315,421
+Anniesland,Glasgow queen street,AM,141,179
+Anniesland,Glasgow queen street,IP,143,182
+Anniesland,Glasgow queen street,PM,145,185
+Arbroath,Edinburgh,PM,189,273
+Ardrossan harbour,Glasgow central,AM,208,322
+Ardrossan harbour,Glasgow central,IP,245,378
+Ardrossan harbour,Glasgow central,PM,263,406
+Ardrossan town,Glasgow central,AM,282,434
+Auchinleck,Glasgow central,IP,145,185
+Ayr,Edinburgh,AM,282,434
+Ayr,Edinburgh,IP,282,434
+Ayr,Girvan,IP,145,185
+Ayr,Girvan,PM,145,185
+Ayr,Glasgow central,AM,322,497
+Ayr,Glasgow central,IP,232,359
+Ayr,Glasgow central,PM,302,466
+Ayr,North berwick,IP,282,434
+Ayr,Stranraer,AM,145,185
+Balloch,Airdrie,AM,300,422
+Balloch,Airdrie,IP,300,422
+Balloch,Airdrie,PM,300,422
+Barrhead,Glasgow central,AM,174,222
+Barrhead,Glasgow central,IP,145,185
+Barrhead,Glasgow central,PM,145,185
+Birmingham new street,Edinburgh,AM,297,411
+Birmingham new street,Edinburgh,IP,297,411
+Birmingham new street,Edinburgh,PM,297,411
+Birmingham new street,Glasgow central,AM,297,411
+Birmingham new street,Glasgow central,IP,297,411
+Birmingham new street,Glasgow central,PM,297,411
+Carlisle,Dumfries,IP,145,185
+Carlisle,Dumfries,PM,145,185
+Carlisle,Glasgow central,IP,145,185
+Carlisle,Glasgow central,PM,145,185
+Carstairs,Garscadden,AM,315,421
+Cowdenbeath,Edinburgh,IP,136,172
+Cowdenbeath,Edinburgh,PM,136,172
+Crianlarich,Mallaig,IP,290,370
+Crosshill,Glasgow central,IP,212,282
+Cumbernauld,Dalmuir,AM,350,468
+Cumbernauld,Dalmuir,IP,280,374
+Cumbernauld,Dalmuir,PM,350,468
+Cumbernauld,Dumbarton central,AM,205,281
+Cumbernauld,Dumbarton central,IP,205,281
+Cumbernauld,Dumbarton central,PM,205,281
+Dalmally,Oban,PM,145,185
+Dalmuir,Balloch,AM,210,281
+Dalmuir,Helensburgh central,AM,362,566
+Dalmuir,Larkhall,AM,275,375
+Dalmuir,Larkhall,IP,295,398
+Dalmuir,Larkhall,PM,315,421
+Dalmuir,Motherwell,AM,350,468
+Dalmuir,Motherwell,IP,280,374
+Dalmuir,Motherwell,PM,350,468
+Dalmuir,Whifflet,AM,210,281
+Dalmuir,Whifflet,IP,350,468
+Dalmuir,Whifflet,PM,210,281
+Dingwall,Inverness,IP,136,172
+Dumbarton central,Cumbernauld,AM,205,281
+Dumbarton central,Cumbernauld,IP,205,281
+Dumbarton central,Cumbernauld,PM,205,281
+Dumfries,Carlisle,AM,145,185
+Dumfries,Carlisle,IP,145,185
+Dumfries,Carlisle,PM,145,185
+Dumfries,Newcastle,AM,145,185
+Dunbar,Edinburgh,IP,326,504
+Dunbar,Edinburgh,PM,282,434
+Dunblane,Edinburgh,AM,186,248
+Dunblane,Edinburgh,IP,187,267
+Dunblane,Edinburgh,PM,218,298
+Dunblane,Glasgow queen street,AM,136,172
+Dunblane,Glasgow queen street,IP,175,247
+Dunblane,Glasgow queen street,PM,198,282
+Dunblane,Stirling,PM,189,273
+Dundee,Edinburgh,AM,237,333
+Dundee,Edinburgh,IP,181,257
+Dundee,Edinburgh,PM,174,242
+Dundee,Glasgow queen street,AM,189,273
+Dundee,Glasgow queen street,IP,193,277
+Dunfermline queen margaret,Edinburgh,AM,189,273
+Dyce,Edinburgh,PM,189,273
+Dyce,Glasgow queen street,AM,189,273
+East kilbride,Glasgow central,AM,344,439
+East kilbride,Glasgow central,IP,145,185
+East kilbride,Glasgow central,PM,290,370
+Edinburgh,Aberdeen,IP,189,273
+Edinburgh,Aberdeen,PM,189,273
+Edinburgh,Alloa,PM,272,344
+Edinburgh,Ayr,IP,282,434
+Edinburgh,Ayr,PM,282,434
+Edinburgh,Birmingham new street,AM,297,411
+Edinburgh,Birmingham new street,IP,297,411
+Edinburgh,Birmingham new street,PM,297,411
+Edinburgh,Cowdenbeath,AM,136,172
+Edinburgh,Cowdenbeath,IP,136,172
+Edinburgh,Cowdenbeath,PM,193,277
+Edinburgh,Dunbar,IP,326,504
+Edinburgh,Dunbar,PM,282,434
+Edinburgh,Dunblane,AM,172,240
+Edinburgh,Dunblane,IP,187,267
+Edinburgh,Dunblane,PM,218,298
+Edinburgh,Dundee,AM,162,222
+Edinburgh,Dundee,IP,180,254
+Edinburgh,Dundee,PM,235,313
+Edinburgh,Glasgow central,AM,164,209
+Edinburgh,Glasgow central,IP,142,181
+Edinburgh,Glasgow central,PM,163,218
+Edinburgh,Glasgow queen street,AM,350,518
+Edinburgh,Glasgow queen street,IP,285,425
+Edinburgh,Glasgow queen street,PM,373,551
+Edinburgh,Glenrothes with thornton,AM,155,207
+Edinburgh,Glenrothes with thornton,IP,155,204
+Edinburgh,Glenrothes with thornton,PM,179,244
+Edinburgh,Helensburgh central,AM,362,566
+Edinburgh,Helensburgh central,IP,331,518
+Edinburgh,Helensburgh central,PM,331,518
+Edinburgh,Inverness,AM,189,273
+Edinburgh,Inverness,IP,189,273
+Edinburgh,Inverness,PM,189,273
+Edinburgh,Inverurie,AM,189,273
+Edinburgh,Inverurie,IP,189,273
+Edinburgh,Inverurie,PM,189,273
+Edinburgh,Kirkcaldy,PM,325,445
+Edinburgh,Liverpool,AM,535,741
+Edinburgh,Liverpool,IP,535,741
+Edinburgh,Liverpool,PM,535,741
+Edinburgh,London euston,AM,369,511
+Edinburgh,London euston,IP,369,511
+Edinburgh,London euston,PM,369,511
+Edinburgh,Manchester airport,AM,229,317
+Edinburgh,Manchester airport,IP,229,317
+Edinburgh,Manchester airport,PM,229,317
+Edinburgh,Milngavie,AM,362,566
+Edinburgh,Milngavie,IP,331,518
+Edinburgh,Milngavie,PM,362,566
+Edinburgh,North berwick,AM,349,539
+Edinburgh,North berwick,IP,326,504
+Edinburgh,North berwick,PM,371,574
+Edinburgh,Perth,AM,136,172
+Edinburgh,Perth,IP,136,172
+Edinburgh,Perth,PM,136,172
+Edinburgh,Plymouth,AM,225,311
+Edinburgh,Plymouth,IP,225,311
+Edinburgh,Plymouth,PM,225,311
+Edinburgh,Tweedbank,AM,177,235
+Edinburgh,Tweedbank,IP,144,188
+Edinburgh,Tweedbank,PM,189,273
+Elgin,Inverness,AM,162,222
+Falkirk grahamston,Glasgow queen street,AM,156,210
+Falkirk grahamston,Glasgow queen street,IP,140,178
+Falkirk grahamston,Glasgow queen street,PM,174,242
+Fort william,Mallaig,AM,290,370
+Girvan,Ayr,AM,145,185
+Girvan,Ayr,IP,145,185
+Girvan,Kilmarnock,AM,145,185
+Girvan,Kilmarnock,PM,145,185
+Glasgow central,Ardrossan harbour,AM,208,322
+Glasgow central,Ardrossan harbour,IP,257,396
+Glasgow central,Ardrossan harbour,PM,263,406
+Glasgow central,Ardrossan town,AM,282,434
+Glasgow central,Ayr,AM,269,416
+Glasgow central,Ayr,IP,245,378
+Glasgow central,Ayr,PM,292,452
+Glasgow central,Barrhead,AM,174,222
+Glasgow central,Barrhead,IP,145,185
+Glasgow central,Barrhead,PM,145,185
+Glasgow central,Birmingham new street,AM,297,411
+Glasgow central,Birmingham new street,IP,297,411
+Glasgow central,Birmingham new street,PM,297,411
+Glasgow central,Carlisle,AM,145,185
+Glasgow central,Carlisle,IP,145,185
+Glasgow central,Carlisle,PM,290,370
+Glasgow central,East kilbride,AM,265,339
+Glasgow central,East kilbride,IP,145,185
+Glasgow central,East kilbride,PM,306,390
+Glasgow central,Edinburgh,AM,168,214
+Glasgow central,Edinburgh,IP,142,180
+Glasgow central,Edinburgh,PM,166,211
+Glasgow central,Girvan,PM,290,370
+Glasgow central,Glasgow central,AM,231,317
+Glasgow central,Glasgow central,IP,211,281
+Glasgow central,Glasgow central,PM,242,322
+Glasgow central,Gourock,AM,232,335
+Glasgow central,Gourock,IP,216,311
+Glasgow central,Gourock,PM,217,325
+Glasgow central,Irvine,PM,208,322
+Glasgow central,Kilmarnock,AM,145,185
+Glasgow central,Kilmarnock,IP,163,208
+Glasgow central,Kilmarnock,PM,145,185
+Glasgow central,Lanark,AM,315,421
+Glasgow central,Lanark,IP,332,444
+Glasgow central,Lanark,PM,350,468
+Glasgow central,Largs,AM,245,378
+Glasgow central,Largs,IP,220,340
+Glasgow central,Largs,PM,245,378
+Glasgow central,London euston,AM,441,612
+Glasgow central,London euston,IP,441,612
+Glasgow central,London euston,PM,441,612
+Glasgow central,Manchester airport,AM,229,317
+Glasgow central,Manchester airport,IP,229,317
+Glasgow central,Manchester airport,PM,229,317
+Glasgow central,Neilston,AM,258,344
+Glasgow central,Neilston,IP,211,281
+Glasgow central,Neilston,PM,291,387
+Glasgow central,New cumnock,AM,145,185
+Glasgow central,Newcastle,PM,145,185
+Glasgow central,Newton (lanarkshire),AM,237,316
+Glasgow central,Newton (lanarkshire),IP,211,281
+Glasgow central,Newton (lanarkshire),PM,210,281
+Glasgow central,North berwick,AM,282,434
+Glasgow central,Paisley canal,AM,240,342
+Glasgow central,Paisley canal,IP,212,282
+Glasgow central,Paisley canal,PM,211,290
+Glasgow central,Plymouth,AM,225,311
+Glasgow central,Plymouth,IP,225,311
+Glasgow central,Plymouth,PM,225,311
+Glasgow central,Stranraer,AM,290,370
+Glasgow central,Stranraer,IP,145,185
+Glasgow central,Stranraer,PM,145,185
+Glasgow central,Wemyss bay,AM,210,295
+Glasgow central,Wemyss bay,IP,210,302
+Glasgow central,Wemyss bay,PM,210,302
+Glasgow queen street,Aberdeen,AM,189,273
+Glasgow queen street,Aberdeen,IP,189,273
+Glasgow queen street,Aberdeen,PM,234,330
+Glasgow queen street,Alloa,AM,156,210
+Glasgow queen street,Alloa,IP,155,207
+Glasgow queen street,Alloa,PM,250,329
+Glasgow queen street,Anniesland,AM,139,177
+Glasgow queen street,Anniesland,IP,144,183
+Glasgow queen street,Anniesland,PM,145,185
+Glasgow queen street,Arbroath,PM,189,273
+Glasgow queen street,Carnoustie,PM,272,344
+Glasgow queen street,Dunblane,AM,162,222
+Glasgow queen street,Dunblane,IP,171,239
+Glasgow queen street,Dunblane,PM,244,326
+Glasgow queen street,Dundee,AM,193,277
+Glasgow queen street,Edinburgh,AM,380,558
+Glasgow queen street,Edinburgh,IP,275,410
+Glasgow queen street,Edinburgh,PM,350,518
+Glasgow queen street,Falkirk grahamston,AM,139,176
+Glasgow queen street,Falkirk grahamston,IP,140,178
+Glasgow queen street,Falkirk grahamston,PM,180,253
+Glasgow queen street,Inverness,AM,189,273
+Glasgow queen street,Inverness,IP,189,273
+Glasgow queen street,Inverness,PM,189,273
+Glasgow queen street,Lenzie,PM,145,185
+Glasgow queen street,Markinch,PM,189,273
+Glasgow queen street,Oban,AM,435,555
+Glasgow queen street,Oban,IP,290,370
+Glasgow queen street,Oban,PM,217,277
+Glasgow queen street,Stirling,AM,189,273
+Glasgow queen street,Stirling,IP,136,172
+Glasgow queen street,Stirling,PM,189,273
+Glenrothes with thornton,Edinburgh,AM,204,286
+Glenrothes with thornton,Edinburgh,IP,152,202
+Glenrothes with thornton,Edinburgh,PM,149,197
+Glenrothes with thornton,Tweedbank,IP,136,172
+Glenrothes with thornton,Tweedbank,PM,199,263
+Gourock,Glasgow central,AM,217,313
+Gourock,Glasgow central,IP,222,320
+Gourock,Glasgow central,PM,217,317
+Haymarket,North berwick,PM,282,434
+Helensburgh central,Edinburgh,AM,331,518
+Helensburgh central,Edinburgh,IP,346,542
+Helensburgh central,Edinburgh,PM,362,566
+Helensburgh central,Springburn,AM,181,283
+Huntly,Aberdeen,AM,272,344
+Hyndland,Edinburgh,AM,362,566
+Invergordon,Inverness,PM,136,172
+Inverness,Aberdeen,AM,204,258
+Inverness,Aberdeen,IP,199,263
+Inverness,Aberdeen,PM,162,222
+Inverness,Ardgay,PM,136,172
+Inverness,Dingwall,IP,136,172
+Inverness,Edinburgh,AM,189,273
+Inverness,Edinburgh,IP,189,273
+Inverness,Edinburgh,PM,189,273
+Inverness,Glasgow queen street,AM,189,273
+Inverness,Glasgow queen street,IP,189,273
+Inverness,Glasgow queen street,PM,189,273
+Inverness,Invergordon,IP,136,172
+Inverness,Kyle of lochalsh,AM,136,172
+Inverness,Kyle of lochalsh,IP,136,172
+Inverness,Kyle of lochalsh,PM,136,172
+Inverness,Stonehaven,IP,136,172
+Inverness,Wick,IP,136,172
+Inverurie,Aberdeen,AM,189,273
+Inverurie,Aberdeen,IP,189,273
+Inverurie,Aberdeen,PM,272,344
+Inverurie,Edinburgh,IP,189,273
+Inverurie,Glasgow queen street,AM,189,273
+Inverurie,Stonehaven,PM,136,172
+Irvine,Glasgow central,PM,208,322
+Kilmarnock,Girvan,AM,145,185
+Kilmarnock,Glasgow central,AM,193,246
+Kilmarnock,Glasgow central,IP,145,185
+Kilmarnock,Glasgow central,PM,145,185
+Kilmarnock,Stranraer,IP,145,185
+Kilmarnock,Stranraer,PM,145,185
+Kilwinning,Glasgow central,AM,208,322
+Kirkcaldy,Glasgow queen street,AM,198,282
+Kyle of lochalsh,Elgin,PM,136,172
+Kyle of lochalsh,Inverness,IP,136,172
+Lanark,Glasgow central,AM,315,421
+Lanark,Glasgow central,IP,315,421
+Lanark,Glasgow central,PM,385,515
+Largs,Glasgow central,AM,330,511
+Largs,Glasgow central,IP,220,340
+Largs,Glasgow central,PM,232,359
+Larkhall,Milngavie,AM,385,515
+Larkhall,Milngavie,IP,257,351
+Larkhall,Milngavie,PM,350,468
+Lenzie,Glasgow queen street,AM,145,185
+Liverpool,Edinburgh,AM,535,741
+Liverpool,Edinburgh,IP,535,741
+Liverpool,Edinburgh,PM,535,741
+London euston,Edinburgh,AM,369,511
+London euston,Edinburgh,IP,369,511
+London euston,Edinburgh,PM,369,511
+London euston,Glasgow central,AM,441,612
+London euston,Glasgow central,IP,441,612
+London euston,Glasgow central,PM,441,612
+Mallaig,Fort william,PM,145,185
+Mallaig,Glasgow queen street,IP,290,370
+Mallaig,Glasgow queen street,PM,290,370
+Manchester airport,Edinburgh,AM,229,317
+Manchester airport,Edinburgh,IP,229,317
+Manchester airport,Edinburgh,PM,229,317
+Manchester airport,Glasgow central,AM,229,317
+Manchester airport,Glasgow central,IP,229,317
+Manchester airport,Glasgow central,PM,229,317
+Milngavie,Cumbernauld,AM,350,468
+Milngavie,Cumbernauld,IP,280,374
+Milngavie,Cumbernauld,PM,280,374
+Milngavie,Edinburgh,AM,331,518
+Milngavie,Edinburgh,IP,346,542
+Milngavie,Edinburgh,PM,331,518
+Milngavie,Motherwell,AM,350,468
+Milngavie,Motherwell,IP,275,375
+Milngavie,Motherwell,PM,270,375
+Motherwell,Cumbernauld,AM,420,562
+Motherwell,Dalmuir,AM,275,375
+Motherwell,Dalmuir,IP,312,421
+Motherwell,Dalmuir,PM,275,375
+Motherwell,Lanark,AM,420,562
+Neilston,Glasgow central,AM,258,344
+Neilston,Glasgow central,IP,211,281
+Neilston,Glasgow central,PM,264,352
+Newton (lanarkshire),Glasgow central,AM,237,316
+Newton (lanarkshire),Glasgow central,IP,211,281
+Newton (lanarkshire),Glasgow central,PM,210,281
+North berwick,Ayr,PM,282,434
+North berwick,Edinburgh,AM,349,539
+North berwick,Edinburgh,IP,326,504
+North berwick,Edinburgh,PM,326,504
+North berwick,Glasgow central,AM,282,434
+North berwick,Haymarket,AM,349,539
+Oban,Crianlarich,IP,145,185
+Oban,Crianlarich,PM,145,185
+Oban,Dalmally,PM,145,185
+Oban,Glasgow queen street,AM,145,185
+Oban,Glasgow queen street,IP,145,185
+Paisley canal,Glasgow central,AM,247,358
+Paisley canal,Glasgow central,IP,212,282
+Paisley canal,Glasgow central,PM,211,288
+Perth,Edinburgh,AM,298,394
+Perth,Edinburgh,IP,181,229
+Perth,Edinburgh,PM,136,172
+Perth,Glasgow queen street,AM,325,445
+Plymouth,Edinburgh,AM,225,311
+Plymouth,Edinburgh,IP,225,311
+Plymouth,Edinburgh,PM,225,311
+Plymouth,Glasgow central,AM,225,311
+Plymouth,Glasgow central,IP,225,311
+Plymouth,Glasgow central,PM,225,311
+Prestonpans,Edinburgh,AM,189,273
+Stirling,Glasgow queen street,AM,189,273
+Stirling,Glasgow queen street,IP,136,172
+Stirling,Glasgow queen street,PM,140,178
+Stranraer,Glasgow central,AM,145,185
+Stranraer,Glasgow central,PM,145,185
+Stranraer,Kilmarnock,AM,145,185
+Stranraer,Kilmarnock,IP,145,185
+Tweedbank,Edinburgh,AM,136,172
+Tweedbank,Edinburgh,IP,144,188
+Tweedbank,Edinburgh,PM,173,226
+Tweedbank,Glenrothes with thornton,AM,189,273
+Tweedbank,South gyle,AM,235,313
+Wemyss bay,Glasgow central,AM,209,308
+Wemyss bay,Glasgow central,IP,210,302
+Wemyss bay,Glasgow central,PM,210,302
+Whifflet,Dalmuir,AM,210,281
+Whifflet,Dalmuir,IP,315,421
+Whifflet,Dalmuir,PM,280,374
+Wick,Inverness,AM,136,172
+Wick,Inverness,IP,136,172

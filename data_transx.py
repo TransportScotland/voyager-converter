@@ -153,7 +153,33 @@ def average_running_time(times, round_places=2):
 #    node_lookup = dictionary of ATCO to node (entire network)
 #    model_timings = set True to use the timings only when the service is within the model area
 # # 
-def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_node_lookup=None, node_lookup=None, model_timings=True):
+    
+def get_services(filename, day_filter, date_filter, headways, 
+                 sim_node_lookup=None, node_lookup=None, model_timings=True):
+    """Get all relevant services within an XML TransXChange file.
+    
+    Parameters
+    ----------
+    filename : str
+        The XML file.
+    day_filter : list
+        Days of the week to use.
+    date_filter : list
+        Start and end dates of the period to look at.
+    headways : tuple
+        Headway period names and definitions
+    sim_node_lookup : dict, optional
+        ATCO->Node dictionary (simulation nodes only)
+    node_lookup : dict, optional
+        ATCO->Node dictionary (all nodes)
+    model_timings : bool, optional
+        Calculate running times when inside the model area (default True)
+        
+    Returns
+    -------
+    dict
+        Filtered data dictionary
+    """
 
     global num_entries, operator_index, operator_name_dict, mode_index
 
@@ -166,8 +192,10 @@ def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_
     
     headway_names, headway_periods = headways
     
-    date_from = date(year=int(date_filter[0][2]), month=int(date_filter[0][1]), day=int(date_filter[0][0]))
-    date_to = date(year=int(date_filter[1][2]), month=int(date_filter[1][1]), day=int(date_filter[1][0]))
+    date_from = date(year=int(date_filter[0][2]), month=int(date_filter[0][1]), 
+                     day=int(date_filter[0][0]))
+    date_to = date(year=int(date_filter[1][2]), month=int(date_filter[1][1]), 
+                   day=int(date_filter[1][0]))
     
     with open(filename, "r") as file:
         xml_text = ""
@@ -277,6 +305,7 @@ def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_
             if noop_start is not None and noop_end is not None:
                 if noop_start <= date_from <= noop_end:
                     is_operating = False
+                    print(s_ref, " is caught by non-working range")
         if is_operating is False:
             continue
                 
@@ -389,6 +418,21 @@ def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_
         
 
 def print_lin_file(infile, outlin, operator_lookup, headway_defs, log):
+    """Print a formatted Cube Voyager Bus line file
+    
+    Parameters
+    ----------
+    infile : str
+        CSV file containing the line data
+    outlin : str
+        Line file save path
+    operator_lookup : str
+        Path to operator lookup CSV
+    headway_defs : tuple
+        Headway period names and definitions
+    log : tkinter widget
+        Widget with a add_message method
+    """
 
     log.add_message("Printing LIN File")
 
@@ -453,7 +497,8 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log):
         # new headways split by headway - 1, 2, 3 = 60, 60, 60
         # combine by [60, 60, 60] + [180, 180, 180] => 180/60 + 180/180 = 4 => 180 / 4 = 45
         
-        cur.execute("SELECT Line_Name, Long_Name, Mode, Operator, Circular, Times, Headways, Nodes, am_rt, ip_rt, pm_rt FROM all_serv")
+        cur.execute(("SELECT Line_Name, Long_Name, Mode, Operator, Circular, "
+                     "Times, Headways, Nodes, am_rt, ip_rt, pm_rt FROM all_serv"))
         service_dict = {}
         for row in cur.fetchall():
             key = row[1][:-1] + " - " + row[7]
@@ -570,6 +615,8 @@ def print_lin_file(infile, outlin, operator_lookup, headway_defs, log):
 
 def XML_post_filter(period, op_list, infile, outfile, outlinfile, 
                     operator_file, headway_defs, log):
+    """Filters out specific operators
+    """
 
     log.add_message("Filtering in post\n")
 
@@ -614,9 +661,11 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
                              operator_file, out_headways_file, op_fun, 
                              selected_days, date_filter, headway_defs, 
                              widgets, update_ops):
+    """Function called from GUI
+    """
     
     try:
-        import_XML_data(xml_dir, station_lookup, node_lookup, 
+        import_XML_data(xml_dir, node_lookup, 
                         operator_file, out_headways_file, op_fun, 
                         selected_days, date_filter, headway_defs, widgets)
         widgets[1]["state"] = "normal"
@@ -639,9 +688,30 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
     if update_ops is not None:
         update_ops("ops")
             
-def import_XML_data(xml_dir, station_lookup, node_lookup, operator_file, 
+def import_XML_data(xml_dir, node_lookup, operator_file, 
                     out_headways_file, op_fun, selected_days, date_filter, 
                     headway_defs, widgets):
+    """Processes a directory of TransXChange XML files
+    
+    Parameters
+    ----------
+    xml_dir : str
+        Path to directory of XML files
+    node_lookup : str
+        Path to CSV file of ATCO to Cube node mapping
+    operator_lookup : str
+        Path to operator lookup file 
+    out_headways_file : str
+        Save path for intermediate processed data
+    selected_days : list
+        Days of the week to use.
+    date_filter : list
+        Start and end dates of the period to look at.
+    headway_defs : tuple
+        Headway period names and definitions
+    widgets : tuple
+        Must contain (log widget, button widget, progress bar widget)
+    """
 
     log = widgets[0]
     button = widgets[1]
@@ -762,8 +832,8 @@ def import_XML_data(xml_dir, station_lookup, node_lookup, operator_file,
         prev_data_len = len(data)
         try:
             data += get_services(os.path.join(xml_dir, xml_file),
-                                 op_list, day_filter, date_filter,
-                                 c, headway_info, sim_node_lookup=sim_node_dict,
+                                 day_filter, date_filter,
+                                 headway_info, sim_node_lookup=sim_node_dict,
                                  node_lookup=node_dict, model_timings=False)
             log.add_message("- Finished reading: %s found %d services" % (xml_file.strip(".xml"), len(data) - prev_data_len))
         except NotInNetworkError:

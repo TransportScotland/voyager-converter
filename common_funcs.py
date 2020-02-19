@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
+from summarise_line_files import single_add_rts_back_in
 #import tkinter as tk
 #from tkinter import ttk
 import csv
@@ -106,5 +107,38 @@ def time_diff(start, end):
         diff = e - s
     return str(int(diff.total_seconds() / 60))
 
-
+# Prints a line file in the standard agreed format with line breaks after certain fields
+# File paths contains paths of all AM,IP,PM files in that order
+# Period is 0 - 2 and indicates AM, IP, PM
+def print_rail_lin(data, file_paths):
+    
+    breaks = ["MODE=",
+              "ONEWAY=",
+              "HEADWAY[1]=",
+              "HEADWAY[2]=",
+              "HEADWAY[3]=",
+              "CROWDCURVE[1]=",
+              "CROWDCURVE[4]=",
+              "SEATCAP="]
+    
+    in_line_files = file_paths
+    
+    for i, in_lin_file in enumerate(in_line_files):
+        output_lin_file = in_lin_file#.replace(".LIN", "_LINENUMBERS.LIN")
+        with open(output_lin_file, "w", newline="") as file:
+            file.write(";;<<PT>><<LINE>>;;\n")
+            for service in sorted(list(data[i].values()), 
+                                  key=lambda k: int("".join(c for c in k["LINE NAME"] if c.isdigit()))):
+                # If the service is flagged with None, can be ignored
+                if service == None:
+                    continue
+                new_service = single_add_rts_back_in(service, [])
+                line_string = ", ".join([k + "=" + v for k, v in new_service.items() if k != "N" and k != "RT"])
+                line_string += ",\n\tN=" + ",\n\t".join([x.replace(",", ",\n\t") for x in new_service["N"]])
+                result = line_string
+                for break_point in breaks:
+                    result = result.replace(break_point, "\n\t%s" % break_point)
+                result = result.replace("\n\tRT=", " RT=")
+                file.write(result)
+                file.write("\n\n")
 
