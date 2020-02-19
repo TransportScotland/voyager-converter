@@ -1,0 +1,227 @@
+Mode,Code,Number,Name
+RAIL,SR,1,ScotRail
+RAIL,CS,2,Caledonian Sleeper
+RAIL,XC,3,CrossCountry
+RAIL,NT,4,Northern Rail
+RAIL,GR,5,LNER
+RAIL,TP,6,TransPennine Express
+RAIL,VT,7,Virgin Trains
+BUS,ADD,11,Addison News
+BUS,BAI,12,Bains Coaches
+BUS,BLU,13,Blue Bus
+BUS,BCB,14,Bo'Ness Area Community B
+BUS,BOR,15,Borders Buses
+BUS,DEC,16,D + E Coaches
+BUS,DGC,17,DGC Buses
+BUS,DMC,18,Dochertys Midland Coache
+BUS,EMH,19,E + M Horsburgh
+BUS,ECB,20,East Coast Buses
+BUS,FAB,21,First Aberdeen
+BUS,FGL,22,First Glasgow
+BUS,FED,23,First Scotland East
+BUS,HNM,24,Houstons Minicoaches
+BUS,HEX,25,Hunters Executive Coache
+BUS,JMT,26,JMB Travel
+BUS,JFM,27,John Ferguson
+BUS,LOB,28,Lothian Buses
+BUS,ELB,29,Lothian Country Buses
+BUS,MKC,30,MacKies Coaches
+BUS,MCC,31,McCalls Coaches
+BUS,MCG,32,McGills Bus Service
+BUS,MEGA,33,Megabus
+BUS,MBGD,34,Megabus Gold
+BUS,MOF,35,Moffat + Williamson
+BUS,MWN,36,MW Nicoll
+BUS,HOG,37,Peter Hogg
+BUS,DPC,38,Prentice Coaches
+BUS,RBC,39,RB Coaches
+BUS,SBC,40,Scottish Borders Council
+BUS,SCL,41,Scottish Citylink
+BUS,SCMG,42,Scottish Citylink + Mega
+BUS,SCUL,43,Scottish Citylink + Ulst
+BUS,SHI,44,Shiel Buses
+BUS,CUM,45,Stagecoach Cumberland
+BUS,SIF,46,Stagecoach East Scotland
+BUS,STG,47,Stagecoach Glasgow
+BUS,STI,48,Stagecoach Highlands
+BUS,BLB,49,Stagecoach North Scotlan
+BUS,STW,50,Stagecoach West Scotland
+BUS,STU,51,Stuarts Coaches
+BUS,TJT,52,Teejay Travel
+BUS,TEL,53,Telfords Coaches
+BUS,TFT,54,Transport for Tongue
+BUS,TVS,55,Travelsure
+BUS,WCM,56,West Coast Motors
+BUS,WES,57,Westerbus
+BUS,WHI,58,Whitelaws Coaches
+BUS,WSH,59,Wishart
+BUS,TRD,60,Xplore Dundee
+RAIL,GW,8,GW
+RAIL,EM,9,EM
+RAIL,ME,10,ME
+RAIL,CH,61,CH
+RAIL,LE,62,LE
+RAIL,TL,63,TL
+RAIL,GN,64,GN
+RAIL,XR,65,XR
+RAIL,CC,66,CC
+RAIL,LO,67,LO
+RAIL,LT,68,LT
+RAIL,HX,69,HX
+RAIL,AW,70,AW
+RAIL,LM,71,LM
+RAIL,SW,72,SW
+RAIL,IL,73,IL
+RAIL,SE,74,SE
+RAIL,SN,75,SN
+RAIL,GX,76,GX
+RAIL,HT,77,HT
+RAIL,TW,78,TW
+RAIL,GC,79,GC
+BUS,SDT,80,SD Travel
+BUS,ATF,81,All The Fours
+BUS,BRC,82,Bryans Coaches
+BUS,GLH,83,Garelochhead Minibuses +
+BUS,KTL,84,Kingshouse Travel
+BUS,UNI,85,United Coaches
+BUS,SYD,86,Strathclyde Bus
+BUS,KYC,87,Key Coaches
+BUS,NAT,88,North Area Transport Ass
+BUS,DUP,89,C+M Coaches
+BUS,SHU,90,Shuttlebus
+BUS,CRC,91,Wilsons Buses
+BUS,CTB,92,Glasgow Citybus
+BUS,MCR,93,McCreadie Coaches
+BUS,SAC,94,South Ayrshire Community
+BUS,WRH,95,Wilsons of Rhu
+BUS,AVO,96,Avondale Coaches
+BUS,JDC,97,JD Coaches
+BUS,MCL,98,McColls Coaches
+BUS,GNS,99,Gillen Coaches
+BUS,MPO,100,Millport Motors
+BUS,GIV,101,Gibson Direct
+BUS,DUN,102,Dunns Coaches
+BUS,PCV,103,Canavan Travel
+BUS,COL,104,Colchri Coaches
+BUS,HRO,105,Harry O Transport
+BUS,CTG,106,Community Transport Glas
+BUS,LID,107,Liddell Coaches
+BUS,MCN,108,McNairn Coaches
+BUS,MCK,109,MacKenzie Bus + Coach Se
+BUS,BLL,110,A + J Ballantyne
+BUS,GDC,111,GD Coaches
+BUS,SWG,112,Sweeneys Garage
+BUS,BBG,113,Burnbrae Garage
+BUS,SPH,114,Stagecoach East Scotland
+BUS,YUL,115,Elizabeth Yule
+BUS,STY,116,Stagecoach East Scotland
+BUS,SSO,117,Smith + Sons
+BUS,BBT,118,Broons Buses + Taxis
+BUS,VAT,119,Staran Community Interes
+BUS,BNC,120,Bus Na Comhairle
+BUS,HDT,121,Isle of Hoy Development
+BUS,MCO,122,Moray Council
+BUS,MAY,123,Maynes Coaches
+BUS,DVR,124,Deveron Coaches
+NONE,LCT,125,Lothian Community Transp
+TRAM,EDT,126,Edinburgh Trams
+BUS,GRT,127,George Rapson Travel
+BUS,NIH,128,The Durness Bus
+NONE,NAS,129,Graham Nash
+BUS,LCG,130,Lochcarron Garage
+BUS,ALI,131,A MacDonald
+BUS,TXI,132,Taxi Service
+TRAM,SSR,133,Strathspey Railway Compa
+FERRY,SCR,134,Scoraig Ferry
+FERRY,PEN,135,Pentland Ferries
+BUS,CCK,136,Creich Croik and Kincard
+NONE,NWC,137,North West Community Bus
+BUS,EWE,138,Ewens Coach Hire
+BUS,KSM,139,KSM Motors
+NONE,MRK,140,MacRae Kintail
+BUS,DMK,141,DMK Motors
+NONE,LAD,142,Lochaber Action on Disab
+BUS,ROS,143,Ross Minibuses
+FERRY,NLK,144,Northlink Ferries
+FERRY,JGF,145,John O'Groats Ferries
+FERRY,THC,146,Highland Council
+FERRY,WIC,147,Western Isles Cruises
+FERRY,SFC,148,Skye Ferry Community Int
+BUS,RML,149,MacLean Coaches
+BUS,AMD,150,Alasdair MacDonald
+BUS,SMS,151,Scalpay Minibus Service
+BUS,HET,152,Hebridean Transport
+BUS,KML,153,Kenneth MacLennan
+BUS,SHC,154,South Harris Coaches
+BUS,PML,155,Peter MacLennan
+BUS,AIM,156,MacLennan Coaches
+BUS,TFS,157,Uig Bus Services
+BUS,GAL,158,Galson Motors
+BUS,MMI,159,Murdo MacIver
+BUS,WMV,160,WMV Motor Hirer
+BUS,DAT,161,D A Travel
+BUS,AIT,162,Aitken Island Travel
+BUS,GRE,163,Grenitote Travel
+BUS,TAG,164,Tagsa Uibhist
+BUS,JMQ,165,John Macquarrie
+BUS,LMT,166,Lochs Motor Transport
+BUS,HMN,167,MacNeil Coaches
+BUS,RMM,168,Roderick MacMillan
+BUS,ALM,169,Alastair MacDonald + Son
+FERRY,CAL,170,Caledonian MacBrayne
+BUS,DOD,171,Dodds of Troon
+FERRY,WFL,172,Western Ferries
+NONE,WVY,173,Paddle Steamer Waverley
+BUS,DMD,174,Donald MacDonald
+BUS,MJM,175,Murdo J MacDonald
+BUS,HMS,176,Hebridean Minibus Servic
+TRAM,SPTU,177,SPT Subway
+NONE,LWR,178,Leadhills and Wanlockhea
+FERRY,CLL,179,Cruise Loch Lomond
+FERRY,ARD,180,Ardlui Hotel
+FERRY,SWC,181,Sweeneys Cruises
+FERRY,HIS,182,Historic Scotland
+FERRY,SWS,183,The Steam Ship Sir Walte
+FERRY,CLM,184,Clyde Marine
+NONE,KDR,185,Keith + Dufftown Railway
+FERRY,AFL,186,Argyll Ferries
+FERRY,CLK,187,Clydelink
+TRAM,BNK,188,Bo'ness and Kinneil Rail
+BUS,PWD,189,Prentice Westwood
+BUS,ACS,190,A1 Coaches
+BUS,BAY,191,Bay Travel
+BUS,FSH,192,Fishers Tours
+BUS,FST,193,Festival Travel
+BUS,MER,194,Merlin Travel
+BUS,GHM,195,Hamish Gordon
+BUS,EVE,196,Eves Coaches
+BUS,CBL,197,ACS Taxis
+BUS,WAV,198,Waverley Travel
+BUS,ECL,199,Edinburgh Coach Lines
+BUS,WCT,200,Wigtownshire Community T
+BUS,MCH,201,McCullochs Coaches
+BUS,BWG,202,W Brownrigg
+BUS,AND,203,Andersons of Langholm
+BUS,MCE,204,MacEwans Coach Services
+BUS,JRO,205,James Robertson
+BUS,GLN,206,Glenkens Transport Initi
+BUS,BKR,207,Buskers
+BUS,IDM,208,Glen Valley Travel
+BUS,SNA,209,Snaiths Travel
+BUS,RBN,210,E + AJ Robertson
+BUS,CRA,211,Tighnabruaich Service St
+FERRY,ULV,212,Ulva Ferry
+FERRY,NMK,213,Islay Sea Safari
+BUS,JOK,214,John Kennedy
+BUS,DAM,215,A J MacLean
+BUS,BML,216,Islay Coaches
+BUS,AWE,217,Awe Service Station
+FERRY,ABF,218,Argyll + Bute Council Fe
+BUS,JPE,219,J P Minicoaches
+BUS,CTY,220,County Travel
+BUS,CEN,221,Central Taxis
+BUS,GNK,222,Glenesk Travel Company
+NONE,JMB,223,J + M Burns
+BUS,WCC,224,Watermill Coaches
+BUS,DCB,225,Mid Deeside Community Tr
+RAIL,QC,226,QC
