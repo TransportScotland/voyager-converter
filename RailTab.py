@@ -41,9 +41,9 @@ class RailTab:
         self.date_to = [tk.StringVar() for x in range(0,3)]
 
         self.node_lookup = tk.StringVar()
-#        self.node_lookup.set(os.path.join("Node Lookup Files", "rail_nodes.csv"))
+        self.node_lookup.set(os.path.join("Node Lookup Files", "Patching", "nodes_rail_forecast.csv"))
         self.link_lookup = tk.StringVar()
-#        self.link_lookup.set(os.path.join("Node Lookup Files", "rail_links.csv"))
+        self.link_lookup.set(os.path.join("Node Lookup Files", "Patching", "links_rail_forecast.csv"))
         self.set_defaults()
         self.add_frames()
         self.create_header_widget(self.header_frame)
