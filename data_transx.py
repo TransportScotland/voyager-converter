@@ -306,6 +306,9 @@ def get_services(filename, day_filter, date_filter, headways,
                 if noop_start <= date_from <= noop_end:
                     is_operating = False
                     print(s_ref, " is caught by non-working range")
+                    print(noop_start.strftime("%d/%m/%Y"), 
+                          date_from.strftime("%d/%m/%Y"), 
+                          noop_end.strftime("%d/%m/%Y"))
         if is_operating is False:
             continue
                 
@@ -859,7 +862,7 @@ def import_XML_data(xml_dir, node_lookup, operator_file,
         rows = c.fetchall()
         writer.writerows(rows)
 
-    with open("unused_xml_files.txt", "w", newline="") as file:
+    with open("Output Files\\unused_xml_files.txt", "w") as file:
         for xml_file in unused_xml_files:
             file.write("%s\n" % xml_file)
     log.add_message("Unused files have been noted in 'unused_xml_files.txt'")
