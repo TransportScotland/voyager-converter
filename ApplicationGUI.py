@@ -2,6 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 import traceback
 
+
+# Create Common directories
+from pathlib import Path
+Path("Intermediate").mkdir(parents=True, exist_ok=True)
+
 import OperatorTab
 import RailTab
 import BusTab
@@ -11,6 +16,7 @@ import SummaryTab
 import RenumberTab
 
 ######################################################
+
 
 
 #Class that represents the overall gui
