@@ -174,7 +174,7 @@ def parse_timetable(mca_path, station_lookup, day_filter,
               "Timing Load", "Speed", "Op Chars", "Class", "Sleepers", 
               "Reservations", "Connections", "Catering", "Brand", "Spare", "STP"]
     bs_lengths = [2,1,6,6,6,7,1,1,2,4,4,1,8,1,3,4,3,6,1,1,1,1,4,4,1,1]
-    bs_use = ["UID", "Date From", "Date To", "Days", "Bank Hol"]
+    bs_use = ["UID", "Date From", "Date To", "Days", "Bank Hol", "STP"]
     
     bx_key = ["Identity", "Class", "UIC", "ATOC", "Timetable Code", "Reserved1", "Reserved2", "Spare"]
     bx_lengths = [2,4,5,2,1,8,1,57]
@@ -202,6 +202,7 @@ def parse_timetable(mca_path, station_lookup, day_filter,
     
         basic_service = {} # UID -> [dates, days]
         service_details = {} # UID -> [[TIPLOC, Arrival, Departure]]
+        cancelled_UIDs = [] # stores all cancellations 
         UID = None
         LO = BX = LI = LT = None
     
@@ -214,7 +215,7 @@ def parse_timetable(mca_path, station_lookup, day_filter,
             
             # If not within a service, look for BS lines to indicate start of service 
             if UID is None:
-                UID, serv_date_from, serv_date_to, days, bank_hol = parse_fixed_line(
+                UID, serv_date_from, serv_date_to, days, bank_hol, stp = parse_fixed_line(
                         line, bs_key, bs_lengths, 
                         use_columns=bs_use, condition="BS", condition_index=0)
                 if UID is None:
@@ -232,6 +233,36 @@ def parse_timetable(mca_path, station_lookup, day_filter,
                     UID = None
                     continue
                 
+                # Check that the service has not previously been cancelled
+                if UID in cancelled_UIDs:
+                    print("IGNORED %s :: CANCELLED" % UID)
+                    UID = None
+                    continue
+                
+                # Check if the service is a cancellation or overlay
+                if stp == "C":
+                    # If the service UID has already been read in - remove it
+                    try:
+                        del service_details[UID]
+                        del basic_service[UID]
+                        print("REMOVED %s :: CANCELLED" % UID)
+                    except:
+                        # If not already read in, add to the cancellation list
+                        cancelled_UIDs.append(UID)
+                    UID = None
+                    continue
+                # If the service is already read in, check if this one should overwrite it
+                if UID in service_details and UID in basic_service:
+                    if stp == "O":
+                        del service_details[UID]
+                        del basic_service[UID]
+                        print("OVERRIDING %s :: OVERRIDE" % UID)
+                    else:
+                        # If here, stp is P and the existing service was an override
+                        # Ignore this one
+                        print("IGNORING %s :: OVERRIDDEN" % UID)
+                        UID = None
+                        continue
                 
             # Look for the BX info 
             elif BX is None:
