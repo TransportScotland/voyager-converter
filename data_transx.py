@@ -143,6 +143,42 @@ def average_running_time(times, round_places=2):
     else:
         return round(sum(times)/len(times), round_places)
     
+    
+def summarize(excel_output_file):
+    
+    """
+    Creates a summary excel file of the routes extracted from TransXChange data
+    """
+    
+    import pandas as pd
+    
+    df = pd.read_csv("Intermediate\\individual_routes.csv")
+    n = pd.read_csv("Node Lookup Files/tmfs_naptan_to_local_authority.csv")
+    n = n.fillna("External")    
+    n.columns = ["ATCOCode", "LA"]
+    
+    df = df.loc[df.Mode.isin(["coach", "bus"])]
+    df["Origin"] = df.Route.str.split(",").apply(lambda x:x[0])
+    df["Destination"] = df.Route.str.split(",").apply(lambda x:x[-1])
+    df = df.merge(n, left_on="Origin", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
+    df["Origin"] = df.LA.fillna("Unknown")
+    df.drop("LA", axis=1, inplace=True)
+    df = df.merge(n, left_on="Destination", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
+    df["Destination"] = df.LA.fillna("Unknown")
+    df.drop("LA", axis=1, inplace=True)
+    
+    g1 = df.groupby(["LongName", "LineName", "Operator", 
+                     "Origin", "Destination", "Hour"])["RunningTime"].count()
+    
+    g2 = df.groupby(["Origin", "Destination", "Operator", "Hour"])["RunningTime"].count()
+    
+    df = df[["Operator", "LineName", "LongName", "Origin", "Destination", "Hour"]]
+    
+    with pd.ExcelWriter(excel_output_file) as writer:
+        g2.to_excel(writer, sheet_name="LA Counts")
+        df.to_excel(writer, sheet_name="Base Data")
+        g1.to_excel(writer, sheet_name="Service Counts")
+    
 # # Provide:
 #    filename = Name of XML file 
 #    op_list = list of operators (SS)
@@ -155,7 +191,8 @@ def average_running_time(times, round_places=2):
 # # 
     
 def get_services(filename, day_filter, date_filter, headways, 
-                 sim_node_lookup=None, node_lookup=None, model_timings=True):
+                 sim_node_lookup=None, node_lookup=None, model_timings=True,
+                 discard_non_headways=True):
     """Get all relevant services within an XML TransXChange file.
     
     Parameters
@@ -174,6 +211,8 @@ def get_services(filename, day_filter, date_filter, headways,
         ATCO->Node dictionary (all nodes)
     model_timings : bool, optional
         Calculate running times when inside the model area (default True)
+    discard_non_headways : bool, optional
+        Controls whether the services outside of the headway periods are discarded
         
     Returns
     -------
@@ -391,6 +430,8 @@ def get_services(filename, day_filter, date_filter, headways,
         
         headway_index = get_headway_period(running_hour, headway_periods)
         # Use to filter headways not in the model periods
+        if discard_non_headways:
+            headway_index = 0
         if headway_index is None:
             continue
         running_times.setdefault(line, {})
@@ -663,14 +704,15 @@ def XML_post_filter(period, op_list, infile, outfile, outlinfile,
 def import_XML_data_callback(xml_dir, station_lookup, node_lookup, 
                              operator_file, out_headways_file, op_fun, 
                              selected_days, date_filter, headway_defs, 
-                             widgets, update_ops):
+                             widgets, update_ops, summary_output):
     """Function called from GUI
     """
     
     try:
         import_XML_data(xml_dir, node_lookup, 
                         operator_file, out_headways_file, op_fun, 
-                        selected_days, date_filter, headway_defs, widgets)
+                        selected_days, date_filter, headway_defs, widgets,
+                        summary_output)
         widgets[1]["state"] = "normal"
     except KeyboardInterrupt:
         widgets[0].add_message("Keyboard Interrupt detected, stopping...", color="RED")
@@ -693,7 +735,7 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
             
 def import_XML_data(xml_dir, node_lookup, operator_file, 
                     out_headways_file, op_fun, selected_days, date_filter, 
-                    headway_defs, widgets):
+                    headway_defs, widgets, summary_output):
     """Processes a directory of TransXChange XML files
     
     Parameters
@@ -810,9 +852,9 @@ def import_XML_data(xml_dir, node_lookup, operator_file,
     with open(outfile,"w", newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Service", "LongName", "LineName", "Circular", 
-                         "Operator", "Direction", "Mode", "Day", 
+                         "Direction", "Operator", "Mode", "Day", 
                          "DepartureTime", "RunningTime", "MidTime", "Hour", 
-                         "Route_id", "Route"])
+                         "Route_id", "Route", "Nodes", "RT_AM", "RT_IP", "RT_PM"])
         log.add_message("Cleared file: " + outfile + "\n")
     
     num_entries = 0
@@ -861,6 +903,10 @@ def import_XML_data(xml_dir, node_lookup, operator_file,
         c.execute("SELECT * FROM services")
         rows = c.fetchall()
         writer.writerows(rows)
+    if summary_output != "":
+        summarize(summary_output)
+        log.add_message("Saved Summary")
+        return
 
     with open("Output Files\\unused_xml_files.txt", "w") as file:
         for xml_file in unused_xml_files:

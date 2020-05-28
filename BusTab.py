@@ -27,6 +27,7 @@ class BusTab:
                       "XML_p" : tk.StringVar(),
                       #"nod" : tk.StringVar(),
                       "lin" : tk.StringVar(),
+                      "XML_SUMMARY" : tk.StringVar()
                       }
         
         self.days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
@@ -66,16 +67,18 @@ class BusTab:
         for k, default in default_vars.items():
             self.files[k] = default
         
-    def read_xml_files(self):
+    def read_xml_files(self, summary=False):
         days_filter = [x.get() for x in self.gen.selected_days]
         date_filters = [[x.get() for x in self.gen.date_from],
                          [x.get() for x in self.gen.date_to]]
         widget_list = (self.log, self.XML_read, self.progress)
         custom_headways = (self.gen.head_defs.get(), self.gen.head_name.get())
+        summary_save_path = self.files["XML_SUMMARY"].get() if summary else ""
         f_args = (self.to_path("XML"),self.to_path("sta"), 
                   self.gen.to_path("b_nod"), self.gen.to_path("ops"), 
                   self.to_path("XML_a"),self.update_input, days_filter, 
-                  date_filters,custom_headways, widget_list, self.read_file)
+                  date_filters,custom_headways, widget_list, self.read_file,
+                  summary_save_path)
         if self.is_ncsd_data.get() == 1:
             threading.Thread(target=bi_ncsd.import_XML_data_callback, args=f_args).start()
         else:
@@ -232,6 +235,8 @@ class BusTab:
     def read_file(self, key):
         if key == "XML":
             self.read_xml_files()
+        elif key == "XML_SUMMARY":
+            self.read_xml_files(summary=True)
         elif key == "ops":
             check_modes = ["BUS", "COACH"]
             ops = set()
@@ -391,10 +396,19 @@ class BusTab:
         butt_frame = ttk.Frame(frame)
         butt_frame.pack()
         ncsd_check = ttk.Checkbutton(butt_frame, text="Is NCSD", variable=self.is_ncsd_data)
-        ncsd_check.pack(side="left", padx=5, pady=5, ipadx=5, ipady=5)
+        ncsd_check.pack(side="top", padx=5, pady=5, ipadx=5, ipady=5)
         CreateToolTip(ncsd_check, text=("Tick if the data being imported is NCSD\n"
                                         "This data has a different format so "
                                         "must be read in separately (Experimental)"))
+        a = LabelledEntry(butt_frame, "Summary Output Path", self.files["XML_SUMMARY"], 
+                          w=50,tool_tip_text=("Save path for summary file."),
+                                              px=0,py=0,lx=0,ly=0)
+        a.add_browse(self.current_dir, save=True, types=(("XLSX", "*.xlsx")), 
+                     extension=".xlsx")
+        self.XML_read = ttk.Button(
+            butt_frame, text="Optional. Summarize Data",style="DS.TButton", 
+            command=lambda : self.read_file("XML_SUMMARY"))
+        self.XML_read.pack(side="left", padx=5, pady=5, ipadx=5, ipady=5,expand=True, fill="both")
         self.XML_read = ttk.Button(
             frame, text="1. Import Data",style="DS.TButton", command=lambda : self.read_file("XML"))
         self.XML_read.pack(side="left", padx=5, pady=5, ipadx=5, ipady=5,expand=True, fill="both")
