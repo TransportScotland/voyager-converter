@@ -144,40 +144,72 @@ def average_running_time(times, round_places=2):
         return round(sum(times)/len(times), round_places)
     
     
-def summarize(excel_output_file):
+def summarize(excel_output_file, date):
     
     """
     Creates a summary excel file of the routes extracted from TransXChange data
+    date parameter should be a string
     """
     
     import pandas as pd
     
     df = pd.read_csv("Intermediate\\individual_routes.csv")
     n = pd.read_csv("Node Lookup Files/tmfs_naptan_to_local_authority.csv")
+    localities = pd.read_csv("Node Lookup Files\\naptan_localities.csv")
     n = n.fillna("External")    
     n.columns = ["ATCOCode", "LA"]
     
     df = df.loc[df.Mode.isin(["coach", "bus"])]
     df["Origin"] = df.Route.str.split(",").apply(lambda x:x[0])
     df["Destination"] = df.Route.str.split(",").apply(lambda x:x[-1])
+    # Get local authorities
     df = df.merge(n, left_on="Origin", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
-    df["Origin"] = df.LA.fillna("Unknown")
+    df["Origin_LA"] = df.LA.fillna("Unknown")
     df.drop("LA", axis=1, inplace=True)
     df = df.merge(n, left_on="Destination", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
-    df["Destination"] = df.LA.fillna("Unknown")
+    df["Destination_LA"] = df.LA.fillna("Unknown")
     df.drop("LA", axis=1, inplace=True)
+    # Get localities
+    df = df.merge(localities, left_on="Origin", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
+    df["Origin_Locality"] = df["LocalityName"].fillna("Unknown")
+    df.drop("LocalityName", axis=1, inplace=True)
+    df = df.merge(localities, left_on="Destination", right_on="ATCOCode", how="left").drop("ATCOCode", axis=1)
+    df["Destination_Locality"] = df["LocalityName"].fillna("Unknown")
+    df.drop("LocalityName", axis=1, inplace=True)
     
-    g1 = df.groupby(["LongName", "LineName", "Operator", 
-                     "Origin", "Destination", "Hour"])["RunningTime"].count()
+    routes = df[["Route_id", "Route"]].drop_duplicates()
     
-    g2 = df.groupby(["Origin", "Destination", "Operator", "Hour"])["RunningTime"].count()
+    g1 = df.groupby(["Service", "LongName", "LineName", "Operator", "Route_id",
+                     "Origin_Locality", "Destination_Locality", "Hour"], 
+                    as_index=False)["RunningTime"].count()
+    g1.rename({"RunningTime": "Count"}, axis=1, inplace=True)
     
-    df = df[["Operator", "LineName", "LongName", "Origin", "Destination", "Hour"]]
+    g2 = df.groupby(["Origin_LA", "Destination_LA", "Operator", "Hour"],
+                    as_index=False)["RunningTime"].count()
+    g2.rename({"RunningTime": "Count"}, axis=1, inplace=True)
+    
+    df = df[["Service", "Route_id", "Operator", "LineName", "LongName",
+             "Origin_Locality", "Destination_Locality",
+             "Origin_LA", "Destination_LA", "Hour"]]
+    
+    extraction_details = pd.DataFrame([["ExtractionDate", date]], 
+                                      columns=["Parameter", "Value"])
     
     with pd.ExcelWriter(excel_output_file) as writer:
-        g2.to_excel(writer, sheet_name="LA Counts")
-        df.to_excel(writer, sheet_name="Base Data")
-        g1.to_excel(writer, sheet_name="Service Counts")
+        extraction_details.to_excel(writer, sheet_name="Parameters", index=False)
+        df.to_excel(writer, sheet_name="Base Data", index=False)
+        g2.to_excel(writer, sheet_name="LA Counts", index=False)
+        g1.to_excel(writer, sheet_name="Service Counts", index=False)
+        
+    # Export/extend route lookup
+    routes_lookup_file = "Output Files\\%sRouteCodeLookup.csv" % date
+    try:
+        existing_routes = pd.read_csv(routes_lookup_file)
+    except:
+        existing_routes = pd.DataFrame(columns=routes.columns)
+    routes = pd.concat((routes, existing_routes), sort=False, axis=0)
+    routes = routes.drop_duplicates()
+    routes.to_csv(routes_lookup_file, index=False)
     
 # # Provide:
 #    filename = Name of XML file 
@@ -904,7 +936,7 @@ def import_XML_data(xml_dir, node_lookup, operator_file,
         rows = c.fetchall()
         writer.writerows(rows)
     if summary_output != "":
-        summarize(summary_output)
+        summarize(summary_output, "-".join(date_filter[0]))
         log.add_message("Saved Summary")
         return
 
