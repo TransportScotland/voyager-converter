@@ -341,6 +341,14 @@ def get_services(filename, day_filter, date_filter, headways,
                                             "DateRange",{}))] for j in journeys if 
                 days_valid(list(j["OperatingProfile"]["RegularDayType"].get(
                         "DaysOfWeek",{None:None}).keys()), day_filter) == True}
+
+    # Dictionary of journey pattern ids to journey pattern refs
+    j_ref_dict = {
+        s["ServiceCode"]: {
+            jp["@id"]: [jp["JourneyPatternSectionRefs"]] 
+            for jp in make_list(s["StandardService"]["JourneyPattern"])
+        } for s in services
+    }
     
     points = None 
     services = None 
@@ -358,8 +366,11 @@ def get_services(filename, day_filter, date_filter, headways,
         # service_id, journey_pattern_id, days_of_operation, departure_time
         noop_ranges = noop_dict[k] # Start and end of non-operating period (not always present)
         
-            
-        route_details = j_pattern_dict[pat_ref]# [[stop1, stop2, time],[stop2, stop3, time], ...]
+        j_pat_ref = j_ref_dict[s_ref][pat_ref]
+        if len(j_pat_ref) != 1:
+            raise ValueError("There are multiple pattern references assigned to the journey id")
+        j_pat_ref = j_pat_ref[0]
+        route_details = j_pattern_dict[j_pat_ref] # [[stop1, stop2, time],[stop2, stop3, time], ...]
         try:
             line, operator, desc, mode = s_dict[s_ref][0], s_dict[s_ref][1], s_dict[s_ref][4], s_dict[s_ref][5]
             # line_name, operator, service_description, mode_of_travel
