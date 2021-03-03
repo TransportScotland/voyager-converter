@@ -70,8 +70,17 @@ Required files (see existing versions for format):
    - Link File (patching interface) - every relevant link in the network
    - Patching Override file - overrides for the patching process, see file for formatting guidance
   
+Optional Files (for other features):
+1. sequence_patch.txt - Used in the "Sequence Replace" process to replace node sequences in a Cube Lin file.
+2. LIN Summary Files, for use when running the "Extended Summary":
+   - Urban Areas - Containing 2 columns: "N" contains the Cube node number, "urban_area" contains an ID relating to a built-up area (0 if not urban)
+   - Node Local Authority - Containing 2 columns: "N" contains the Cube node number, "LA" contains an ID relating to a local authority
+   - Node Cordons - Containing 2 columns: "N" contains the Cube node number, "CORDON" contains an ID relating to a custom cordon area
+   - Node Coordinates - Containing 3 columns: "N" contains the Cube node number, "X" contains the x coordinate and "Y" the y coordinate (units must be metres)
+
 Software requirements are:
-- Python 3
+- Python 3 (packages listed in requirements.txt)
+
 
 ## Usage
 1. In 'General Options', select the day and date of interest. Ensure all file locations are specified
@@ -80,6 +89,18 @@ Software requirements are:
 4. Open the patching interface and browse for the Node File and Link File. Press "Patch Routes".
 5. When finished patching, close the patching interface.
 6. Specify the output file path, and press "Print LIN File"
+
+### Intermediate Files
+Various intermediate files are produced when the tool is run, these can be used to check that the services being extracted are sensible.
+1. Bus (note that these are the default file names):
+   - individual_routes.csv - containing the relevant raw data extracted from the XML files, in CSV format
+   - headways.csv - containing the services aggregated by time period and route, with headways calculated
+   - headways_filtered_operators.csv - filtered version of headways.csv
+   - headways_patched.csv - output file of the bus node patching process
+2. Rail (note that these are the default file names):
+   - mca_out.csv - containing the relevant raw data extracted from the MCA file, in CSV format
+   - mca_out_head.csv - containing the services aggregated by time period and route, with headways calculated
+   - mca_out_head_patched.csv - output file of the rail node patching process
         
 ### Other Tabs
 ##### Assign Operators
@@ -92,8 +113,8 @@ The sequences must be specified in the 'Changes File' in the format specified
 Output is a new Line file (does not overwrite)
 
 ##### LIN Summary
-Outputs a CSV of the lines file for analysis and checking
-If additional files are specified, additional analysis will be performed
-    
-## Not Implemented
-- Support multiple rail input files 
+Outputs a CSV of the lines file for analysis and checking based on movements between urban areas. The "Extended Summary" will also include service distance, and movements between local authorities and custom cordons.
+
+##### LIN Renumber (incomplete)
+Renumbers rail services based on a base LIN file so that services that are close to equivalent (based on origin/destination, operator and route) keep the same number as the base version. Creates a file "Alternative Lookup" that is expanded when unmatched services are found. This file can be used in the same process as an input so that these unmatched services also retain their number.
+

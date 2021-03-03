@@ -1,0 +1,19 @@
+# This file contains the sequences to replace in the LIN files
+#
+# Sequences can be changed using the notation:
+#
+#       'original_node_sequence':'replacement_node_sequence'
+#       1000,1005:1000,-1001,-1002,-1003,-1004,1005
+#	Start the line with 'A' if all variations of the old sequence are to be used, 
+#	e.g. A1001,10003,1002 will pick up all combinations: 1001,10003,1002 and 1001,-10003,1002 and -1001,-10003,-1002 etc.
+#
+#	No checks are done to check the validity of the replacement sequences
+#	Lines starting with # are ignored
+#
+#####################################################################
+
+# Examples
+# Reroute services between 12060 and 12114 away from 12058
+#-12060,-12058,-12114:-12060,-12113,-12112,-12114
+# Correct dead end movement to 49033
+#A49164,49033,49164:49164
