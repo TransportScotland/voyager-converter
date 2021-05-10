@@ -1,7 +1,10 @@
 
 Intermediate/*
 Output Files/*
+Node Lookup Files/Data/*
 
 .spyproject/*
 __pycache__/*
 build-env/*
+
+.vscode/*
