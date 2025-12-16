@@ -1,5 +1,6 @@
 from datetime import date, timedelta, datetime
 import os
+import re
 import csv
 import sqlite3
 #from textwrap import TextWrapper
@@ -92,10 +93,39 @@ def dates_valid(check_dates, valid_dates):
     return True
     
 def timing_to_seconds(timing):
-    unit = timing[-1]
-    time = int(timing[2:-1])
-    in_seconds = time * [1, 60, 3600][["S","M","H"].index(unit)]
-    return in_seconds
+    try:
+        # 1. Handle ISO 8601 with all parts, e.g. PT0H0M27S, PT1H2M3S, etc.
+        iso_match = re.fullmatch(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', timing)
+        if iso_match:
+            hours = int(iso_match.group(1) or 0)
+            minutes = int(iso_match.group(2) or 0)
+            seconds = int(iso_match.group(3) or 0)
+            return hours * 3600 + minutes * 60 + seconds
+
+        # 2. Handle non-PT form like '0H0M27'
+        hms_match = re.fullmatch(r'(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S?)?', timing)
+        if hms_match and any(hms_match.groups()):
+            hours = int(hms_match.group(1) or 0)
+            minutes = int(hms_match.group(2) or 0)
+            seconds = int(hms_match.group(3) or 0)
+            return hours * 3600 + minutes * 60 + seconds
+
+        # 3. Handle single-unit forms: '27S', '5M', '2H'
+        simple_match = re.fullmatch(r'(\d+)([HMS])', timing)
+        if simple_match:
+            value = int(simple_match.group(1))
+            unit = simple_match.group(2)
+            return value * {'H': 3600, 'M': 60, 'S': 1}[unit]
+
+        # 4. Try treating as integer seconds
+        if timing.isdigit():
+            return int(timing)
+
+        # If nothing matched, raise
+        raise ValueError("Unknown format")
+
+    except Exception as e:
+        raise Exception(f"Invalid timing string '{timing}': {str(e)}")
     
 def get_headway_period(test, headways=[7,10,16,19]):
     for i in range(len(headways) - 1):
@@ -122,7 +152,7 @@ def average_running_time(times, round_places=2):
 #    node_lookup = dictionary of ATCO to node (entire network)
 #    model_timings = set True to use the timings only when the service is within the model area
 # # 
-def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_node_lookup=None, node_lookup=None, model_timings=True):
+def get_services(filename, op_list, day_filter, date_filter, txc_schema_21, txc_schema_24, cur, headways, sim_node_lookup=None, node_lookup=None, model_timings=True):
 
     global num_entries, operator_index, operator_name_dict, mode_index
 
@@ -177,14 +207,15 @@ def get_services(filename, op_list, day_filter, date_filter, cur, headways, sim_
     # Dictionary of service code to journey pattern id to inbound/outbound
     dir_dict = {s["ServiceCode"]:{jp["@id"]:jp["Direction"] for jp 
                 in make_list(s["StandardService"]["JourneyPattern"])} for s in services}
+
     # Dictionary of service id to service details 
     s_dict = {s["ServiceCode"]:[
             s["Lines"]["Line"]["LineName"], 
             operator_dict[s["RegisteredOperatorRef"]],
             date_from_string(s["OperatingPeriod"].get("StartDate"), default="1990-01-01"),
             date_from_string(s["OperatingPeriod"].get("EndDate"), default="2090-01-01"),
-            s["Description"],
-            s["Mode"]
+            s.get("Description", "No Description"),
+            s.get("Mode", "Bus")
             ] for s in services if 
                 dates_valid([
                         date_from_string(s["OperatingPeriod"].get("StartDate"), default="1990-01-01"),
@@ -622,12 +653,14 @@ def XML_post_filter(period, op_list, infile, outfile, outlinfile,
 
 def import_XML_data_callback(xml_dir, station_lookup, node_lookup, 
                              operator_file, out_headways_file, op_fun, 
+                             txc_schema_21, txc_schema_24,
                              selected_days, date_filter, headway_defs, 
                              widgets, update_ops):
     
     try:
         import_XML_data(xml_dir, station_lookup, node_lookup, 
                         operator_file, out_headways_file, op_fun, 
+                        txc_schema_21, txc_schema_24,
                         selected_days, date_filter, headway_defs, widgets)
         widgets[1]["state"] = "normal"
     except KeyboardInterrupt:
@@ -650,8 +683,8 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
         update_ops("ops")
             
 def import_XML_data(xml_dir, station_lookup, node_lookup, operator_file, 
-                    out_headways_file, op_fun, selected_days, date_filter, 
-                    headway_defs, widgets):
+                    out_headways_file, op_fun, txc_schema_21, txc_schema_24, 
+                    selected_days, date_filter, headway_defs, widgets):
 
     log = widgets[0]
     button = widgets[1]
@@ -772,7 +805,7 @@ def import_XML_data(xml_dir, station_lookup, node_lookup, operator_file,
         prev_data_len = len(data)
         try:
             data += get_services(os.path.join(xml_dir, xml_file),
-                                 op_list, day_filter, date_filter,
+                                 op_list, day_filter, date_filter, txc_schema_21, txc_schema_24,
                                  c, headway_info, sim_node_lookup=sim_node_dict,
                                  node_lookup=node_dict, model_timings=False)
             log.add_message("- Finished reading: %s found %d services" % (xml_file.strip(".xml"), len(data) - prev_data_len))

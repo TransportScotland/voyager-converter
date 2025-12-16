@@ -1,9 +1,12 @@
 from datetime import date, timedelta, datetime
 import os
 import csv
+import re
 import sqlite3
 #from textwrap import TextWrapper
 import traceback
+from typing import Counter
+import txc_validator
 from common_funcs import process_lin
 
 current_dir = os.path.dirname(__file__)
@@ -112,7 +115,12 @@ def days_valid(check_days, valid_days):
         return False
     for day in check_days:
         if day in valid_days:
-            return True 
+            return True    
+    # Someone thought "MondayToSunday" was a useful identifier
+    if "MondayToSunday" in check_days:
+        return True
+    if "MondayToFriday" in check_days:
+        return True
     return False
     
 def dates_valid(check_dates, valid_dates):
@@ -123,10 +131,39 @@ def dates_valid(check_dates, valid_dates):
     return True
     
 def timing_to_seconds(timing):
-    unit = timing[-1]
-    time = int(timing[2:-1])
-    in_seconds = time * [1, 60, 3600][["S","M","H"].index(unit)]
-    return in_seconds
+    try:
+        # 1. Handle ISO 8601 with all parts, e.g. PT0H0M27S, PT1H2M3S, etc.
+        iso_match = re.fullmatch(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', timing)
+        if iso_match:
+            hours = int(iso_match.group(1) or 0)
+            minutes = int(iso_match.group(2) or 0)
+            seconds = int(iso_match.group(3) or 0)
+            return hours * 3600 + minutes * 60 + seconds
+
+        # 2. Handle non-PT form like '0H0M27'
+        hms_match = re.fullmatch(r'(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S?)?', timing)
+        if hms_match and any(hms_match.groups()):
+            hours = int(hms_match.group(1) or 0)
+            minutes = int(hms_match.group(2) or 0)
+            seconds = int(hms_match.group(3) or 0)
+            return hours * 3600 + minutes * 60 + seconds
+
+        # 3. Handle single-unit forms: '27S', '5M', '2H'
+        simple_match = re.fullmatch(r'(\d+)([HMS])', timing)
+        if simple_match:
+            value = int(simple_match.group(1))
+            unit = simple_match.group(2)
+            return value * {'H': 3600, 'M': 60, 'S': 1}[unit]
+
+        # 4. Try treating as integer seconds
+        if timing.isdigit():
+            return int(timing)
+
+        # If nothing matched, raise
+        raise ValueError("Unknown format")
+
+    except Exception as e:
+        raise Exception(f"Invalid timing string '{timing}': {str(e)}")
     
 def get_headway_period(test, headways=[7,10,16,19]):
     for i in range(len(headways) - 1):
@@ -154,7 +191,7 @@ def average_running_time(times, round_places=2):
 #    model_timings = set True to use the timings only when the service is within the model area
 # # 
     
-def get_services(filename, day_filter, date_filter, headways, 
+def get_services(filename, day_filter, date_filter, headways, txc_schema_21, txc_schema_24, log,
                  sim_node_lookup=None, node_lookup=None, model_timings=True):
     """Get all relevant services within an XML TransXChange file.
     
@@ -180,6 +217,41 @@ def get_services(filename, day_filter, date_filter, headways,
     dict
         Filtered data dictionary
     """
+    
+    # Validate TransXChange XML file
+    validation_errors, validation_warnings = txc_validator.validate_transxchange_full(
+        filename,
+        txc_schema_21, 
+        txc_schema_24
+    )
+
+    # Get counts of each error and warning
+    error_counts = Counter(validation_errors)
+    warning_counts = Counter(validation_warnings)
+
+    # Unique list preserving order
+    unique_errors = list(dict.fromkeys(validation_errors))
+    unique_warnings = list(dict.fromkeys(validation_warnings))
+
+    if unique_errors:
+        print("TXC Validation failed: %s" % os.path.basename(filename))
+        log.add_message("TXC Validation failed: %s" % os.path.basename(filename), color="RED")
+        for err in unique_errors:
+            count = error_counts[err]
+            msg = f"  - {err} (occurances: {count})"
+            log.add_message(msg, color="RED")
+            print(msg)
+        return []
+
+    if unique_warnings:
+        print("TXC Validation Warnings for: %s" % os.path.basename(filename))
+        log.add_message("TXC validation warnings found: %s" % os.path.basename(filename), color="YELLOW")
+        for warn in unique_warnings:
+            count = warning_counts[warn]
+            msg = f"  - {warn} (occurances: {count})"
+            log.add_message(msg, color="YELLOW")
+            print(msg)
+
 
     global num_entries, operator_index, operator_name_dict, mode_index
 
@@ -196,6 +268,8 @@ def get_services(filename, day_filter, date_filter, headways,
                      day=int(date_filter[0][0]))
     date_to = date(year=int(date_filter[1][2]), month=int(date_filter[1][1]), 
                    day=int(date_filter[1][0]))
+
+    print(filename)
     
     with open(filename, "r") as file:
         xml_text = ""
@@ -226,39 +300,55 @@ def get_services(filename, day_filter, date_filter, headways,
     j_pattern_dict = {j["@id"]:[
             [x["From"]["StopPointRef"], x["To"]["StopPointRef"], x["RunTime"]] for x 
             in make_list(j["JourneyPatternTimingLink"])] for j in j_sections}
+
     # Dictionary of operator ids to names
-    operator_dict = {o["@id"]:o["OperatorShortName"] for o in operators}
+    operator_dict = {o["@id"]:o["TradingName"] for o in operators}
     # Dictionary of service code to Origin and Destination
     od_dict = {s["ServiceCode"]:[
             s["StandardService"]["Origin"], 
             s["StandardService"]["Destination"]
             ] for s in services}
+    
     # Dictionary of service code to journey pattern id to inbound/outbound
-    dir_dict = {s["ServiceCode"]:{jp["@id"]:jp["Direction"] for jp 
-                in make_list(s["StandardService"]["JourneyPattern"])} for s in services}
+    dir_dict = {
+        s["ServiceCode"]: {
+            jp["@id"]: {
+                "Direction": jp["Direction"],
+                "JourneyPatternSectionRefs": make_list(jp["JourneyPatternSectionRefs"])
+            }
+            for jp in make_list(s["StandardService"]["JourneyPattern"])
+        }
+        for s in services
+    }
+            
     # Dictionary of service id to service details 
     s_dict = {s["ServiceCode"]:[
             s["Lines"]["Line"]["LineName"], 
             operator_dict[s["RegisteredOperatorRef"]],
             date_from_string(s["OperatingPeriod"].get("StartDate"), default="1990-01-01"),
             date_from_string(s["OperatingPeriod"].get("EndDate"), default="2090-01-01"),
-            s["Description"],
-            s["Mode"]
+            s.get("Description") or "No Description",   # <-- Default to 'No Description' if empty/missing
+            s.get("Mode") or "bus"                     # <-- Default to 'bus' if empty/missing
             ] for s in services if 
                 dates_valid([
                         date_from_string(s["OperatingPeriod"].get("StartDate"), default="1990-01-01"),
                         date_from_string(s["OperatingPeriod"].get("EndDate"), default="2090-01-01")
                         ], [date_from, date_to]) == True}
+    
     # Dictionary of journeys codes to service, pattern, operating days, departure time, valid_days(bool)
-    j_dict = {j["VehicleJourneyCode"]:[
-            j["ServiceRef"], 
-            j["JourneyPatternRef"], 
-            list(j["OperatingProfile"]["RegularDayType"].get("DaysOfWeek",{None:None}).keys()), 
+    j_dict = {j["VehicleJourneyCode"]: [
+            j["ServiceRef"],
+            j["JourneyPatternRef"],
+            list(j["OperatingProfile"]["RegularDayType"].get("DaysOfWeek", {None: None}).keys()),
             j["DepartureTime"]
-            ] for j in journeys if 
-                days_valid(list(
-                        j["OperatingProfile"]["RegularDayType"].get(
-                                "DaysOfWeek", {None:None}).keys()), day_filter) == True}
+        ] for j in journeys
+        if "JourneyPatternRef" in j and
+        days_valid(
+                list(j["OperatingProfile"]["RegularDayType"].get("DaysOfWeek", {None: None}).keys()),
+                day_filter
+            )
+    }
+    
     # Dictionary of journey codes to non-operating days
     noop_dict = {j["VehicleJourneyCode"]:[
             [date_from_string(d.get("StartDate","Not Present")),
@@ -286,9 +376,20 @@ def get_services(filename, day_filter, date_filter, headways,
         s_ref, pat_ref, running_days, dep_time = j[0], j[1], j[2], j[3]
         # service_id, journey_pattern_id, days_of_operation, departure_time
         noop_ranges = noop_dict[k] # Start and end of non-operating period (not always present)
+
+        #Check if journey pattern exists in dict
+        #if pat_ref not in j_pattern_dict:
+        #    print(f"Warning: Journey pattern '{pat_ref}' (referenced by journey {k} in service {s_ref}) not found in journey patterns. Skipping this journey.")
+        #    continue
         
-            
-        route_details = j_pattern_dict[pat_ref]# [[stop1, stop2, time],[stop2, stop3, time], ...]
+        journey_pattern_section_refs = dir_dict.get(s_ref, {}).get(pat_ref, {}).get("JourneyPatternSectionRefs", [])
+
+        route_details = [
+            link
+            for section_ref in journey_pattern_section_refs
+            for link in j_pattern_dict.get(section_ref, [])
+        ]
+        
         try:
             line, operator, desc, mode = s_dict[s_ref][0], s_dict[s_ref][1], s_dict[s_ref][4], s_dict[s_ref][5]
             # line_name, operator, service_description, mode_of_travel
@@ -296,7 +397,7 @@ def get_services(filename, day_filter, date_filter, headways,
             # Key error raised if the service should be skipped the service should be skipped 
             continue
         origin, destination = od_dict[s_ref]# origin_stop, destination_stop
-        direction = dir_dict[s_ref][pat_ref]# 'inbound' or 'outbound'
+        direction = dir_dict[s_ref][pat_ref]['Direction']# 'inbound' or 'outbound'
         running_days_string = ','.join(running_days)
 
         # If not operating, skip this journey
@@ -412,7 +513,6 @@ def get_services(filename, day_filter, date_filter, headways,
         service_details.append(line)
             
         num_entries += 1
-            
     
     return service_details
         
@@ -658,7 +758,8 @@ def XML_post_filter(period, op_list, infile, outfile, outlinfile,
             
 
 def import_XML_data_callback(xml_dir, station_lookup, node_lookup, 
-                             operator_file, out_headways_file, op_fun, 
+                             operator_file, out_headways_file, op_fun,
+                             txc_schema_21, txc_schema_24, 
                              selected_days, date_filter, headway_defs, 
                              widgets, update_ops):
     """Function called from GUI
@@ -666,7 +767,7 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
     
     try:
         import_XML_data(xml_dir, node_lookup, 
-                        operator_file, out_headways_file, op_fun, 
+                        operator_file, out_headways_file, op_fun, txc_schema_21, txc_schema_24,
                         selected_days, date_filter, headway_defs, widgets)
         widgets[1]["state"] = "normal"
     except KeyboardInterrupt:
@@ -689,7 +790,7 @@ def import_XML_data_callback(xml_dir, station_lookup, node_lookup,
         update_ops("ops")
             
 def import_XML_data(xml_dir, node_lookup, operator_file, 
-                    out_headways_file, op_fun, selected_days, date_filter, 
+                    out_headways_file, op_fun, txc_schema_21, txc_schema_24, selected_days, date_filter, 
                     headway_defs, widgets):
     """Processes a directory of TransXChange XML files
     
@@ -833,7 +934,7 @@ def import_XML_data(xml_dir, node_lookup, operator_file,
         try:
             data += get_services(os.path.join(xml_dir, xml_file),
                                  day_filter, date_filter,
-                                 headway_info, sim_node_lookup=sim_node_dict,
+                                 headway_info, txc_schema_21, txc_schema_24, log, sim_node_lookup=sim_node_dict,
                                  node_lookup=node_dict, model_timings=False)
             log.add_message("- Finished reading: %s found %d services" % (xml_file.strip(".xml"), len(data) - prev_data_len))
         except NotInNetworkError:

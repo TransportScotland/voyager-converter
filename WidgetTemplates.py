@@ -36,6 +36,7 @@ class TextLog:
         self.text.tag_config('RED', foreground='red')
         self.text.tag_config('GREEN', foreground='green')
         self.text.tag_config('BLUE', foreground='blue')
+        self.text.tag_config('YELLOW', foreground="goldenrod")
         
 
         

@@ -43,12 +43,7 @@ class BusTab:
         self.line_start = tk.IntVar()
         self.date_from = [tk.StringVar() for x in range(0,3)]
         self.date_to = [tk.StringVar() for x in range(0,3)]
-        self.is_ncsd_data = tk.IntVar()
-
-        self.node_lookup = tk.StringVar()
-#        self.node_lookup.set(os.path.join("Node Lookup Files", "bus_nodes_v27.csv"))
-        self.link_lookup = tk.StringVar()
-#        self.link_lookup.set(os.path.join("Node Lookup Files", "bus_links_v27.csv"))
+        self.is_ncsd_data = tk.IntVar()        
         self.set_defaults()
         self.add_frames()
         self.create_header_widget(self.header_frame)
@@ -74,7 +69,8 @@ class BusTab:
         custom_headways = (self.gen.head_defs.get(), self.gen.head_name.get())
         f_args = (self.to_path("XML"),self.to_path("sta"), 
                   self.gen.to_path("b_nod"), self.gen.to_path("ops"), 
-                  self.to_path("XML_a"),self.update_input, days_filter, 
+                  self.to_path("XML_a"), self.update_input, self.gen.to_path("txc_schema_21"), 
+                  self.gen.to_path("txc_schema_24"), days_filter, 
                   date_filters,custom_headways, widget_list, self.read_file)
         if self.is_ncsd_data.get() == 1:
             threading.Thread(target=bi_ncsd.import_XML_data_callback, args=f_args).start()
@@ -89,7 +85,7 @@ class BusTab:
         def callback_patch_routes():
             try:
                 patch_log.add_message("Patching routes...")
-                args = (self.node_lookup.get(), self.link_lookup.get(), 
+                args = (self.gen.files["bus_node"].get(), self.gen.files["bus_link"].get(), 
                         unpatched_file_var.get(),self.to_path("XML_p"), 
                         path_out, self.gen.files["user_p"].get(), err_out)
                 kwargs = {"progress_inc":progress.step, 
@@ -153,12 +149,12 @@ class BusTab:
                                        unpatched_file_var, w=50,
                                        tool_tip_text="The Unpatched intermediate file")
         unpatched_file.add_browse(self.current_dir)
-        node = LabelledEntry(file_frame, "Node File", self.node_lookup, w=50, 
+        node = LabelledEntry(file_frame, "Node File", self.gen.files["bus_node"], w=50, 
                              tool_tip_text=("CSV File that contains all bus nodes "
                                             "in the network\nOne column called "
                                             "'Node' containing node numbers"))
         node.add_browse(self.current_dir)
-        link = LabelledEntry(file_frame, "Link File", self.link_lookup, w=50, 
+        link = LabelledEntry(file_frame, "Link File", self.gen.files["bus_link"], w=50, 
                              tool_tip_text=("CSV File that contains all bus links "
                                             "in the network\nTwo columns called "
                                             "'NodeA' and 'NodeB' containing "

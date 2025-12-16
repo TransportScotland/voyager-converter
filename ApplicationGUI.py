@@ -32,7 +32,7 @@ class Application():
     #Create the frames needed to group various widgets together
     def init_widgets(self):
         n_book = ttk.Notebook()
-
+        
         self.general = CommonTab.CommonTab(n_book, self.load_defaults, 
                                            self.save_defaults, 
                                            name="General Options")
@@ -46,9 +46,8 @@ class Application():
         self.sum_tab = SummaryTab.SummaryTab(n_book, self.general, name="LIN Summary")
         n_book.pack(expand=1, fill="both")
         self.renum_tab = RenumberTab.RenumberTab(n_book, self.general, name="LINE Renumber")
-        n_book.pack(expand=1, fill="both")
-        
-        self.load_defaults()
+        n_book.pack(expand=1, fill="both")         
+        self.load_defaults()       
         
     def load_defaults(self):
         try:
@@ -69,19 +68,23 @@ class Application():
                 
                 self.general.files["ops"].set(self.defaults["operator_file"])
                 self.general.files["b_nod"].set(self.defaults["bus_node_lookup"] )
+                self.general.files["bus_link"].set(self.defaults["bus_link"] )
+                self.general.files["bus_node"].set(self.defaults["bus_node"] )
+                self.general.files["txc_schema_21"].set(self.defaults["txc_schema_21"])                
+                self.general.files["txc_schema_24"].set(self.defaults["txc_schema_24"])                
                 self.general.files["r_nod"].set(self.defaults["rail_node_lookup"] )
                 self.general.files["mode"].set(self.defaults["mode_lookup"])
                 self.general.files["user_p"].set(self.defaults["patching_overrides"])
                 self.ra_tab.files["MCA"].set(self.defaults["mca_data"])
                 self.ra_tab.files["MSN"].set(self.defaults["msn_data"] )
-                self.bu_tab.files["XML"].set(self.defaults["xml_directory"])
+                self.bu_tab.files["XML"].set(self.defaults["xml_directory"])                
                 self.general.inter_folder = self.defaults["intermediate_directory_name"]
                 self.general.head_name.set(self.defaults["headway_names"])
                 self.general.head_defs.set(self.defaults["headway_definitions"])
                 for i in range(len(self.general.date_from)):
                     self.general.date_from[i].set(self.defaults["date"].split("/")[i])
                 for i in range(len(self.defaults["selected_day"])):
-                    self.general.selected_days[i].set(int(self.defaults["selected_day"][i]))
+                    self.general.selected_days[i].set(int(self.defaults["selected_day"][i]))                    
                 self.ra_tab.node_file = self.defaults["rail_node"]
                 self.ra_tab.link_file = self.defaults["rail_link"] 
                 self.bu_tab.node_file = self.defaults["bus_node"] 
@@ -99,6 +102,10 @@ class Application():
         try:
             self.defaults["operator_file"] = self.general.files["ops"].get()
             self.defaults["bus_node_lookup"] = self.general.files["b_nod"].get()
+            self.defaults["bus_link"] = self.general.files["bus_link"].get()
+            self.defaults["bus_node"] = self.general.files["bus_node"].get()
+            self.defaults["txc_schema_24"] = self.general.files["txc_schema_24"].get()                      
+            self.defaults["txc_schema_21"] = self.general.files["txc_schema_21"].get()     
             self.defaults["rail_node_lookup"] = self.general.files["r_nod"].get()
             self.defaults["mode_lookup"] = self.general.files["mode"].get()
             self.defaults["patching_overrides"] = self.general.files["user_p"].get()

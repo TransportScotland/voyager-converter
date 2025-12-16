@@ -18,6 +18,10 @@ class CommonTab:
 
         self.files = {"ops" : tk.StringVar(),
                       "b_nod" : tk.StringVar(),
+                      "bus_node" : tk.StringVar(),
+                      "bus_link" : tk.StringVar(),
+                      "txc_schema_24" : tk.StringVar(),
+                      "txc_schema_21" : tk.StringVar(),
                       "r_nod" : tk.StringVar(),
                       "int" : tk.StringVar(),
                       "user_p" : tk.StringVar(),
@@ -132,13 +136,13 @@ class CommonTab:
         from_year.grid(row=1, column=3, sticky=(tk.E,tk.N))
 
         to_day = ttk.Combobox(frame, textvariable=self.date_to[0], values=d, 
-                              width=3, state="disabled")
+                              width=3)#, state="disabled")
         to_day.grid(row=2, column=1, sticky=(tk.E,tk.S))
         to_month = ttk.Combobox(frame, textvariable=self.date_to[1], values=m, 
-                                width=3, state="disabled")
+                                width=3)#, state="disabled")
         to_month.grid(row=2, column=2, sticky=(tk.E,tk.S))
         to_year = ttk.Combobox(frame, textvariable=self.date_to[2], values=y, 
-                               width=5, state="disabled")
+                               width=5)#, state="disabled")
         to_year.grid(row=2, column=3, sticky=(tk.E,tk.S))
 
         from_label = ttk.Label(frame, text="From")
@@ -215,6 +219,20 @@ class CommonTab:
         ttk.Button(frame, text="Browse", 
                    command=lambda : set_file_path("user_p")).grid(column=1,row=10)
         
+        a = ttk.Label(frame, text="TransXChange Schema 2.1 for Validation File")
+        a.grid(column=0, row=11, sticky="w")
+        CreateToolTip(a, text="Contains path for TransXChange 2.1 General Schema XSD")
+        ttk.Entry(frame, width=50, textvariable=self.files["txc_schema_21"]).grid(column=0, row=12)
+        ttk.Button(frame, text="Browse",
+                command=lambda: set_file_path("txc_schema_21")).grid(column=1, row=12)   
+
+        a = ttk.Label(frame, text="TransXChange Schema 2.4 for Validation File")
+        a.grid(column=0, row=13, sticky="w")
+        CreateToolTip(a, text="Contains path for TransXChange 2.4 General Schema XSD")
+        ttk.Entry(frame, width=50, textvariable=self.files["txc_schema_24"]).grid(column=0, row=14)
+        ttk.Button(frame, text="Browse",
+                command=lambda: set_file_path("txc_schema_24")).grid(column=1, row=14)             
+        
 
     def add_frames(self):
         def add_frame(master, name, pos=[], c_span=1, r_span=1, s=()):
@@ -247,8 +265,8 @@ class CommonTab:
     
         f = self.files
         f["ops"].set(os.path.join(self.lookup_folder,"Operator_Codes.csv"))
-        f["b_nod"].set(os.path.join(self.lookup_folder,"naptan_to_node_lookup_V27.1.csv"))
-        f["r_nod"].set(os.path.join(self.lookup_folder,"tiploc_to_node_lookup_V1.csv"))
+        #f["b_nod"].set(os.path.join(self.lookup_folder,"naptan_to_node_lookup_V27.1.csv"))
+        #f["r_nod"].set(os.path.join(self.lookup_folder,"tiploc_to_node_lookup_V1.csv"))
         f["user_p"].set(os.path.join(self.lookup_folder,"patching_overrides.txt"))
         try:
             os.makedirs(self.inter_dir)
@@ -270,9 +288,9 @@ class CommonTab:
         self.date_to[1].set("01")
         self.date_to[2].set("2020")
         self.auto_open.set(1)
-        for i in range(0,len(self.selected_days)-1):
-            self.selected_days[i].set(0)
-        self.selected_days[2].set(1)
-        self.selected_day.set(2)
+        #for i in range(0,len(self.selected_days)-1):
+        #    self.selected_days[i].set(0)
+        #self.selected_days[2].set(1)
+        #self.selected_day.set(2)        
         
         

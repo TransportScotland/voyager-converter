@@ -7,11 +7,11 @@ import csv
 #from tkinter import filedialog
 
 # Clear the back/forth check file
-with open("Intermediate\\back_forth_services.txt","w"):
-    pass
-with open("Intermediate\\testing_lin.csv","w") as file:
-    file.write(("Longname,Stops,Line,Mode,Operator,Oneway,Circular,Head[1],"
-                "Head[2],Head[3],Seatcap,Crushcap,Loaddist,N\n"))
+# with open("Intermediate\\back_forth_services.txt","w"):
+#     pass
+# with open("Intermediate\\testing_lin.csv","w") as file:
+#     file.write(("Longname,Stops,Line,Mode,Operator,Oneway,Circular,Head[1],"
+#                 "Head[2],Head[3],Seatcap,Crushcap,Loaddist,N\n"))
 
 # Takes a string containing a single line of a service
 # Retuns the same string but with line breaks so that 'width'
