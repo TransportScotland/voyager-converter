@@ -1,5 +1,14 @@
 # Voyager Converter
-Python tool for creating Cube Voyager File Lines files
+The Voyager Converter v2.1 imports rail and bus timetable data and uses Cube network information to build rail and bus routes to create the .LIN PT lines files. This is done using a Python tool with GUI to load in the relevant files. Key inputs are:
+•	Bus stop information
+•	Rail station information
+•	Rail Rolling Stock information
+•	Bus and Rail timetable information
+•	Bus and Rail Operator information
+•	Mode information
+
+For full details on the differences between version 2.1 (this version) and the original Voyager Converter, refer to the file 'voyager-converter_changes.pdf'.
+For detailed instructions on Voyager Converter inputs and processing, refer to the info pack, stored as '20250701_TMfS25_Supply_Update_info_pack.pdf'.
 
 ## Specification
 Process data in CIF (Common Interface File) and TransXChange format and map this to a model network
