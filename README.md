@@ -8,10 +8,10 @@ The Voyager Converter v2.1 imports rail and bus timetable data and uses Cube net
  - Mode information
 
 For full documentation of the differences between version 2.1 (this version) and the original Voyager Converter, refer to the file:  
-> 'voyager-converter_changes.pdf'.  
+> 'voyager-converter_changes.pdf'  
 
 For detailed instructions on Voyager Converter inputs and processing, refer to the info pack:  
-> 'voyager-converter_info_pack.pdf'.
+> 'voyager-converter_info_pack.pdf'
 
 ## Specification
 Process data in CIF (Common Interface File) and TransXChange format and map this to a model network
